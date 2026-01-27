@@ -1570,38 +1570,25 @@ def setup_supabase():
 # ========== EXECUÇÃO ==========
 
 if __name__ == "__main__":
+# ========== EXECUÇÃO PARA PRODUÇÃO ==========
+
+if __name__ == "__main__":
     print("=" * 60)
     print("🚀 URBANA - Sistema de Planejamento Urbano")
-    print("=" * 60)
-    print("✅ TODAS as funcionalidades RESTAURADAS")
-    print("✅ Google OAuth CORRIGIDO")
-    print("✅ Dashboard completo com gráficos")
-    print("✅ Exportação PDF/CSV")
-    print("✅ API REST")
-    print("✅ Sistema mantém TODAS as funcionalidades originais")
     print("=" * 60)
     
     if not os.getenv('SUPABASE_URL') or not os.getenv('SUPABASE_ANON_KEY'):
         print("❌ ERRO: Variáveis de ambiente não configuradas")
-        print("Crie um arquivo .env com:")
-        print("SUPABASE_URL=https://seu-projeto.supabase.co")
-        print("SUPABASE_ANON_KEY=sua-chave-anon")
-        print("SECRET_KEY=sua-chave-secreta")
+        print("Configure as variáveis no Render:")
+        print("SUPABASE_URL, SUPABASE_ANON_KEY, SECRET_KEY")
         exit(1)
     
     if setup_supabase():
         print("✅ Sistema pronto para uso")
-        print(f"🌐 Acesse: http://localhost:5000")
-        print("=" * 60)
-        print("💡 Dicas para testar:")
-        print("1. Login com email/senha: FUNCIONANDO")
-        print("2. Registro: FUNCIONANDO")
-        print("3. Dashboard completo: FUNCIONANDO")
-        print("4. Exportação: FUNCIONANDO")
-        print("5. Google OAuth: CONFIGURÁVEL")
         print("=" * 60)
         
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        # Para produção no Render
+        port = int(os.environ.get('PORT', 5000))
+        app.run(debug=False, host='0.0.0.0', port=port)
     else:
         print("❌ Falha ao conectar com Supabase")
-        print("💡 Verifique suas credenciais no arquivo .env")
