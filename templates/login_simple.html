@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Simples - URBANA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1><i class="fas fa-sign-in-alt"></i> Login Simples</h1>
+                <p>Método alternativo sem Supabase Auth</p>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" class="auth-form">
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> Email
+                    </label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="seu@email.com" value="{{ request.form.email if request.form }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Senha
+                    </label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Sua senha">
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" id="remember" name="remember" class="form-check-input">
+                    <label for="remember" class="form-check-label">
+                        Lembrar-me
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Modo simplificado:</strong> Use esta versão se o login normal 
+                    não estiver funcionando.
+                </div>
+            </form>
+            
+            <div class="auth-links">
+                <a href="{{ url_for('register_simple') }}">
+                    <i class="fas fa-user-plus"></i> Criar conta (simples)
+                </a>
+                <a href="{{ url_for('login') }}">
+                    <i class="fas fa-exchange-alt"></i> Usar login normal
+                </a>
+                <a href="{{ url_for('index') }}">
+                    <i class="fas fa-home"></i> Página inicial
+                </a>
+            </div>
+        </div>
+        
+        <div class="auth-footer">
+            <p>URBANA - Sistema de Planejamento Urbano</p>
+            <p>
+                <a href="{{ url_for('terms') }}">Termos</a> • 
+                <a href="{{ url_for('privacy') }}">Privacidade</a> • 
+                <a href="{{ url_for('index') }}">Home</a>
+            </p>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+</body>
+</html>

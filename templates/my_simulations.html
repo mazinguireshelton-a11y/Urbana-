@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}URBANA | Minhas Simulações{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">Minhas Simulações</h1>
+    <div class="d-flex gap-2">
+        <a href="/" class="btn btn-primary">
+            + Nova Simulação
+        </a>
+        <a href="/export/csv" class="btn btn-success">
+            📥 Exportar CSV
+        </a>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-value">{{ simulations|length }}</div>
+        <div class="metric-label">Total de Simulações</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">👥</div>
+        <div class="metric-value">
+            {% if simulations %}
+                {{ simulations|sum(attribute='population')|int }}
+            {% else %}
+                0
+            {% endif %}
+        </div>
+        <div class="metric-label">População Total</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">💧</div>
+        <div class="metric-value">
+            {% if simulations %}
+                {{ (simulations|sum(attribute='total_water') / simulations|length)|int }}
+            {% else %}
+                0
+            {% endif %}
+        </div>
+        <div class="metric-label">Água Média/dia</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">⚡</div>
+        <div class="metric-value">
+            {% if simulations %}
+                {{ (simulations|sum(attribute='total_energy') / simulations|length)|int }}
+            {% else %}
+                0
+            {% endif %}
+        </div>
+        <div class="metric-label">Energia Média/dia</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Histórico de Simulações</h3>
+        <div class="d-flex gap-2">
+            <input type="text" id="searchInput" class="form-control" placeholder="Buscar local..." style="width: 200px;">
+            <select id="typeFilter" class="form-control" style="width: 150px;">
+                <option value="">Todos os tipos</option>
+                <option value="low">Baixa densidade</option>
+                <option value="medium">Média densidade</option>
+                <option value="high">Alta densidade</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Local</th>
+                    <th>População</th>
+                    <th>Área (km²)</th>
+                    <th>Tipo</th>
+                    <th>Densidade</th>
+                    <th>Água (L/dia)</th>
+                    <th>Energia (kWh/dia)</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="simulationsTable">
+                {% for sim in simulations %}
+                <tr data-type="{{ sim.building_type }}" data-name="{{ sim.area_name.lower() }}">
+                    <td>{{ sim.area_name }}</td>
+                    <td>{{ "{:,}".format(sim.population).replace(",", ".") }}</td>
+                    <td>{{ sim.area_size }}</td>
+                    <td>
+                        <span class="badge {% if sim.building_type == 'low' %}badge-info
+                                           {% elif sim.building_type == 'medium' %}badge-success
+                                           {% else %}badge-warning{% endif %}">
+                            {{ sim.building_type|replace('low', 'Baixa')|replace('medium', 'Média')|replace('high', 'Alta') }} Densidade
+                        </span>
+                    </td>
+                    <td>{{ "%.1f"|format(sim.density) if sim.density else "N/A" }}</td>
+                    <td>{{ "{:,.0f}".format(sim.total_water).replace(",", ".") }}</td>
+                    <td>{{ "{:,.0f}".format(sim.total_energy).replace(",", ".") }}</td>
+                    <td>{{ format_date(sim.created_at, '%d/%m/%Y') }}</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="/report/{{ sim.id }}" class="btn btn-outline btn-small" title="Ver relatório">
+                                👁️
+                            </a>
+                            <button onclick="deleteSimulation({{ sim.id }})" 
+                                    class="btn btn-danger btn-small" 
+                                    title="Excluir">
+                                🗑️
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center p-4">
+                        <p>Nenhuma simulação encontrada.</p>
+                        <a href="/" class="btn btn-primary mt-2">Criar Primeira Simulação</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const tableRows = document.querySelectorAll('#simulationsTable tr');
+    
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const filterType = typeFilter.value;
+        
+        tableRows.forEach(row => {
+            if (row.querySelector('td')) { // Ignora linha vazia
+                const type = row.getAttribute('data-type');
+                const name = row.getAttribute('data-name');
+                
+                const matchesSearch = name.includes(searchTerm);
+                const matchesType = !filterType || type === filterType;
+                
+                row.style.display = (matchesSearch && matchesType) ? '' : 'none';
+            }
+        });
+    }
+    
+    searchInput.addEventListener('input', filterTable);
+    typeFilter.addEventListener('change', filterTable);
+});
+
+function deleteSimulation(simId) {
+    if (confirm('Tem certeza que deseja excluir esta simulação?')) {
+        fetch(`/delete/${simId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Simulação excluída com sucesso!');
+                location.reload();
+            } else {
+                alert('Erro ao excluir simulação.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao excluir simulação.');
+        });
+    }
+}
+</script>
+{% endblock %}

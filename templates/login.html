@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}URBANA | Login{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 400px;">
+    <div class="card shadow-sm">
+        <div class="card-header text-center bg-primary text-white">
+            <h3 class="card-title mb-0">🔐 Entrar no URBANA</h3>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show m-3" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="/login" class="p-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" required 
+                       placeholder="seu.email@exemplo.com">
+            </div>
+            
+            <div class="form-group mb-3">
+                <label class="form-label">Senha</label>
+                <input type="password" name="password" class="form-control" required 
+                       placeholder="Digite sua senha">
+            </div>
+            
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                <label class="form-check-label" for="remember">Manter-me conectado</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 py-2">
+                <i class="fas fa-sign-in-alt me-2"></i>Entrar
+            </button>
+            
+            <div class="text-center mt-3 text-muted" style="font-size: 0.85rem;">
+                🔒 Seus dados são protegidos e criptografados.<br>
+                Apenas emails confirmados podem acessar o sistema.
+            </div>
+        </form>
+        
+        <div class="p-3 border-top">
+            <div class="text-center mb-2">
+                <a href="{{ url_for('forgot_password') }}" class="text-decoration-none">
+                    <i class="fas fa-key me-1"></i>Esqueci minha senha
+                </a>
+            </div>
+            
+            <div class="text-center mb-2">
+                <a href="{{ url_for('resend_confirmation') }}" class="text-decoration-none">
+                    <i class="fas fa-envelope me-1"></i>Reenviar confirmação de email
+                </a>
+            </div>
+            
+            <div class="text-center">
+                <p class="mb-1">Não tem conta? <a href="/register" class="fw-bold">Cadastre-se</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{{ url_for('auth_google') }}" class="btn btn-outline-primary">
+            <i class="fab fa-google me-2"></i>Entrar com Google
+        </a>
+    </div>
+</div>
+{% endblock %}

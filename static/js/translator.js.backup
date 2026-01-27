@@ -1,0 +1,652 @@
+/**
+ * URBANA Translator - Sistema de Tradução PT/EN
+ * Versão 1.1 - Corrigido problema de duplicação
+ */
+
+class UrbanaTranslator {
+    constructor() {
+        // Verificar se já existe uma instância
+        if (window.urbanaTranslatorInstance) {
+            return window.urbanaTranslatorInstance;
+        }
+        
+        this.currentLang = this.getSavedLanguage() || 'pt';
+        this.translations = {
+            'pt': {
+                // Navegação
+                'Dashboard': 'Painel de Controle',
+                'Simular': 'Simular',
+                'Minhas Simulações': 'Minhas Simulações',
+                'Perfil': 'Perfil',
+                'Sair': 'Sair',
+                'Entrar': 'Entrar',
+                'Cadastrar': 'Cadastrar',
+                'Configurações': 'Configurações',
+                
+                // Dashboard
+                'Total de Simulações': 'Total de Simulações',
+                'População Total': 'População Total',
+                'Média de Água': 'Média de Água',
+                'Média de Energia': 'Média de Energia',
+                'Média de Área': 'Média de Área',
+                'Simulações Recentes': 'Simulações Recentes',
+                'Criar Nova Simulação': 'Criar Nova Simulação',
+                'Ver Todas': 'Ver Todas',
+                'Ver Relatório': 'Ver Relatório',
+                'Exportar CSV': 'Exportar CSV',
+                'Exportar PDF': 'Exportar PDF',
+                'Deletar': 'Deletar',
+                'Nenhuma simulação encontrada': 'Nenhuma simulação encontrada',
+                
+                // Formulário de simulação
+                'Nome da Área': 'Nome da Área',
+                'População': 'População',
+                'Tamanho da Área (km²)': 'Tamanho da Área (km²)',
+                'Tipo de Construção': 'Tipo de Construção',
+                'Baixa Densidade': 'Baixa Densidade',
+                'Média Densidade': 'Média Densidade',
+                'Alta Densidade': 'Alta Densidade',
+                'Calcular Consumo': 'Calcular Consumo',
+                'Criar Simulação': 'Criar Simulação',
+                'Simular Novamente': 'Simular Novamente',
+                
+                // Relatório
+                'Relatório de Simulação': 'Relatório de Simulação',
+                'Data da Simulação': 'Data da Simulação',
+                'Consumo Diário de Água': 'Consumo Diário de Água',
+                'Consumo Diário de Energia': 'Consumo Diário de Energia',
+                'Densidade Populacional': 'Densidade Populacional',
+                'Água per Capita': 'Água per Capita',
+                'Energia per Capita': 'Energia per Capita',
+                'Exportar para PDF': 'Exportar para PDF',
+                'Exportar para CSV': 'Exportar para CSV',
+                
+                // Perfil
+                'Meu Perfil': 'Meu Perfil',
+                'Nome': 'Nome',
+                'Email': 'Email',
+                'Organização': 'Organização',
+                'Data de Cadastro': 'Data de Cadastro',
+                'Conta Verificada': 'Conta Verificada',
+                'Alterar Senha': 'Alterar Senha',
+                'Salvar Alterações': 'Salvar Alterações',
+                'Editar Perfil': 'Editar Perfil',
+                
+                // Mensagens
+                'Bem-vindo': 'Bem-vindo',
+                'Erro': 'Erro',
+                'Sucesso': 'Sucesso',
+                'Aviso': 'Aviso',
+                'Informação': 'Informação',
+                'Carregando': 'Carregando',
+                'Salvando': 'Salvando',
+                'Enviando': 'Enviando',
+                'Confirmar': 'Confirmar',
+                'Cancelar': 'Cancelar',
+                'Sim': 'Sim',
+                'Não': 'Não',
+                'OK': 'OK',
+                
+                // Temas
+                'Tema Claro': 'Tema Claro',
+                'Tema Escuro': 'Tema Escuro',
+                'Tema Automático': 'Tema Automático',
+                'Alternar Tema': 'Alternar Tema',
+                
+                // Gráficos
+                'Água (L/dia)': 'Água (L/dia)',
+                'Energia (kWh/dia)': 'Energia (kWh/dia)',
+                'Consumo por Localidade': 'Consumo por Localidade',
+                'Tendência de Consumo': 'Tendência de Consumo',
+                'Distribuição por Tipo': 'Distribuição por Tipo',
+                
+                // Footer
+                'URBANA - Sistema de Planejamento Urbano': 'URBANA - Sistema de Planejamento Urbano',
+                'Todos os direitos reservados': 'Todos os direitos reservados',
+                'Termos de Uso': 'Termos de Uso',
+                'Política de Privacidade': 'Política de Privacidade',
+                
+                // Autenticação
+                'Esqueci minha senha': 'Esqueci minha senha',
+                'Lembrar-me': 'Lembrar-me',
+                'Confirmar Senha': 'Confirmar Senha',
+                'Reenviar Confirmação': 'Reenviar Confirmação',
+                'Login com Google': 'Login com Google',
+                'Email de confirmação enviado': 'Email de confirmação enviado',
+                
+                // Placeholders
+                'Digite seu nome': 'Digite seu nome',
+                'Digite seu email': 'Digite seu email',
+                'Digite sua senha': 'Digite sua senha',
+                'Digite o nome da área': 'Digite o nome da área',
+                'Digite a população': 'Digite a população',
+                'Digite o tamanho da área': 'Digite o tamanho da área',
+                'Selecione o tipo de construção': 'Selecione o tipo de construção'
+            },
+            'en': {
+                // Navigation
+                'Painel de Controle': 'Dashboard',
+                'Simular': 'Simulate',
+                'Minhas Simulações': 'My Simulations',
+                'Perfil': 'Profile',
+                'Sair': 'Logout',
+                'Entrar': 'Login',
+                'Cadastrar': 'Register',
+                'Configurações': 'Settings',
+                
+                // Dashboard
+                'Total de Simulações': 'Total Simulations',
+                'População Total': 'Total Population',
+                'Média de Água': 'Average Water',
+                'Média de Energia': 'Average Energy',
+                'Média de Área': 'Average Area',
+                'Simulações Recentes': 'Recent Simulations',
+                'Criar Nova Simulação': 'Create New Simulation',
+                'Ver Todas': 'View All',
+                'Ver Relatório': 'View Report',
+                'Exportar CSV': 'Export CSV',
+                'Exportar PDF': 'Export PDF',
+                'Deletar': 'Delete',
+                'Nenhuma simulação encontrada': 'No simulations found',
+                
+                // Simulation Form
+                'Nome da Área': 'Area Name',
+                'População': 'Population',
+                'Tamanho da Área (km²)': 'Area Size (km²)',
+                'Tipo de Construção': 'Building Type',
+                'Baixa Densidade': 'Low Density',
+                'Média Densidade': 'Medium Density',
+                'Alta Densidade': 'High Density',
+                'Calcular Consumo': 'Calculate Consumption',
+                'Criar Simulação': 'Create Simulation',
+                'Simular Novamente': 'Simulate Again',
+                
+                // Report
+                'Relatório de Simulação': 'Simulation Report',
+                'Data da Simulação': 'Simulation Date',
+                'Consumo Diário de Água': 'Daily Water Consumption',
+                'Consumo Diário de Energia': 'Daily Energy Consumption',
+                'Densidade Populacional': 'Population Density',
+                'Água per Capita': 'Water per Capita',
+                'Energia per Capita': 'Energy per Capita',
+                'Exportar para PDF': 'Export to PDF',
+                'Exportar para CSV': 'Export to CSV',
+                
+                // Profile
+                'Meu Perfil': 'My Profile',
+                'Nome': 'Name',
+                'Email': 'Email',
+                'Organização': 'Organization',
+                'Data de Cadastro': 'Registration Date',
+                'Conta Verificada': 'Account Verified',
+                'Alterar Senha': 'Change Password',
+                'Salvar Alterações': 'Save Changes',
+                'Editar Perfil': 'Edit Profile',
+                
+                // Messages
+                'Bem-vindo': 'Welcome',
+                'Erro': 'Error',
+                'Sucesso': 'Success',
+                'Aviso': 'Warning',
+                'Informação': 'Information',
+                'Carregando': 'Loading',
+                'Salvando': 'Saving',
+                'Enviando': 'Sending',
+                'Confirmar': 'Confirm',
+                'Cancelar': 'Cancel',
+                'Sim': 'Yes',
+                'Não': 'No',
+                'OK': 'OK',
+                
+                // Themes
+                'Tema Claro': 'Light Theme',
+                'Tema Escuro': 'Dark Theme',
+                'Tema Automático': 'Auto Theme',
+                'Alternar Tema': 'Toggle Theme',
+                
+                // Charts
+                'Água (L/dia)': 'Water (L/day)',
+                'Energia (kWh/dia)': 'Energy (kWh/day)',
+                'Consumo por Localidade': 'Consumption by Location',
+                'Tendência de Consumo': 'Consumption Trend',
+                'Distribuição por Tipo': 'Distribution by Type',
+                
+                // Footer
+                'URBANA - Sistema de Planejamento Urbano': 'URBANA - Urban Planning System',
+                'Todos os direitos reservados': 'All rights reserved',
+                'Termos de Uso': 'Terms of Use',
+                'Política de Privacidade': 'Privacy Policy',
+                
+                // Authentication
+                'Esqueci minha senha': 'Forgot Password',
+                'Lembrar-me': 'Remember Me',
+                'Confirmar Senha': 'Confirm Password',
+                'Reenviar Confirmação': 'Resend Confirmation',
+                'Login com Google': 'Login with Google',
+                'Email de confirmação enviado': 'Confirmation email sent',
+                
+                // Placeholders
+                'Digite seu nome': 'Enter your name',
+                'Digite seu email': 'Enter your email',
+                'Digite sua senha': 'Enter your password',
+                'Digite o nome da área': 'Enter area name',
+                'Digite a população': 'Enter population',
+                'Digite o tamanho da área': 'Enter area size',
+                'Selecione o tipo de construção': 'Select building type'
+            }
+        };
+
+        window.urbanaTranslatorInstance = this;
+        this.init();
+    }
+
+    init() {
+        // Verificar se já foi inicializado
+        if (this.initialized) return;
+        
+        // Carregar linguagem salva
+        this.loadLanguage();
+        
+        // Adicionar botão de tradução ao header
+        this.addLanguageToggle();
+        
+        // Observar mudanças no DOM
+        this.observeDOM();
+        
+        this.initialized = true;
+    }
+
+    getSavedLanguage() {
+        return localStorage.getItem('urbana_lang') || 
+               document.documentElement.lang || 
+               (navigator.language.startsWith('en') ? 'en : 'pt');
+    }
+
+    saveLanguage(lang) {
+        localStorage.setItem('urbana_lang', lang);
+        this.currentLang = lang;
+        document.documentElement.lang = lang;
+    }
+
+    addLanguageToggle() {
+        // Remover todos os language-toggle existentes
+        const existingToggles = document.querySelectorAll('#language-toggle, .language-toggle');
+        existingToggles.forEach(toggle => toggle.remove());
+        
+        // Procurar elementos apropriados para adicionar o seletor
+        const navUser = document.querySelector('.nav-user, .user-info, .auth-links');
+        const navLinks = document.querySelector('.nav-links');
+        const mainHeader = document.querySelector('.main-header .container');
+        
+        let targetElement = navUser || navLinks || mainHeader || document.body;
+        
+        // Se já existir um seletor de idioma na navbar, remover
+        const existingNavSelect = targetElement.querySelector('.language-selector');
+        if (existingNavSelect) {
+            existingNavSelect.remove();
+        }
+        
+        const languageToggle = document.createElement('div');
+        languageToggle.id = 'language-toggle';
+        languageToggle.className = 'language-toggle';
+        languageToggle.innerHTML = `
+            <button class="lang-btn ${this.currentLang === 'pt' ? 'active' : ''}" data-lang="pt" title="Português">
+                🇧🇷 PT
+            </button>
+            <button class="lang-btn ${this.currentLang === 'en' ? 'active' : ''}" data-lang="en" title="English">
+                🇺🇸 EN
+            </button>
+        `;
+        
+        // Estilos inline para garantir visibilidade
+        languageToggle.style.cssText = `
+            display: flex;
+            gap: 5px;
+            margin: 0 10px;
+        `;
+
+        if (navUser) {
+            navUser.insertBefore(languageToggle, navUser.firstChild);
+        } else if (navLinks) {
+            navLinks.parentNode.insertBefore(languageToggle, navLinks.nextSibling);
+        } else {
+            document.body.insertBefore(languageToggle, document.body.firstChild);
+            
+            // Estilo para posicionamento flutuante
+            languageToggle.style.position = 'fixed';
+            languageToggle.style.top = '10px';
+            languageToggle.style.right = '10px';
+            languageToggle.style.zIndex = '9999';
+            languageToggle.style.background = 'white';
+            languageToggle.style.padding = '5px 8px';
+            languageToggle.style.borderRadius = '5px';
+            languageToggle.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+        }
+
+        // Adicionar eventos aos botões
+        languageToggle.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const lang = e.target.dataset.lang;
+                this.switchLanguage(lang);
+            });
+        });
+    }
+
+    switchLanguage(lang) {
+        if (lang === this.currentLang) return;
+        
+        this.saveLanguage(lang);
+        this.translatePage();
+        
+        // Atualizar botões ativos
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.lang === lang) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Atualizar seletor na navbar se existir
+        const navSelect = document.querySelector('#language-select');
+        if (navSelect) {
+            navSelect.value = lang;
+        }
+        
+        // Notificação visual
+        this.showLanguageNotification(lang);
+    }
+
+    translatePage() {
+        // Traduzir todos os elementos de texto
+        this.translateElements(document.body);
+        
+        // Atualizar meta tags
+        this.updateMetaTags();
+        
+        // Atualizar footer theme info
+        this.updateThemeInfo();
+    }
+
+    translateElements(element) {
+        // Percorrer todos os nós de texto
+        const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: function(node) {
+                    // Ignorar nós vazios ou que contenham apenas espaços
+                    if (!node.nodeValue.trim()) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    
+                    // Ignorar elementos dentro de script, style, code, etc.
+                    const parent = node.parentElement;
+                    if (parent && 
+                        (parent.tagName === 'SCRIPT' || 
+                         parent.tagName === 'STYLE' ||
+                         parent.tagName === 'CODE' ||
+                         parent.tagName === 'PRE' ||
+                         parent.classList.contains('no-translate'))) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    
+                    // Ignorar elementos dentro do language-toggle
+                    if (parent && (parent.id === 'language-toggle' || parent.classList.contains('language-toggle'))) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+
+        const nodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            nodes.push(node);
+        }
+
+        // Traduzir cada nó
+        nodes.forEach(node => {
+            const originalText = node.nodeValue.trim();
+            const translation = this.translations[this.currentLang][originalText];
+            
+            if (translation && translation !== originalText) {
+                node.nodeValue = node.nodeValue.replace(originalText, translation);
+            }
+        });
+
+        // Traduzir atributos específicos
+        this.translateAttributes(element);
+    }
+
+    translateAttributes(element) {
+        // Placeholders
+        element.querySelectorAll('[placeholder]').forEach(el => {
+            const original = el.getAttribute('placeholder');
+            const translation = this.translations[this.currentLang][original];
+            if (translation) {
+                el.setAttribute('placeholder', translation);
+            }
+        });
+
+        // Títulos
+        element.querySelectorAll('[title]').forEach(el => {
+            const original = el.getAttribute('title');
+            const translation = this.translations[this.currentLang][original];
+            if (translation) {
+                el.setAttribute('title', translation);
+            }
+        });
+
+        // Labels
+        element.querySelectorAll('label').forEach(el => {
+            if (el.textContent.trim()) {
+                const original = el.textContent.trim();
+                const translation = this.translations[this.currentLang][original];
+                if (translation) {
+                    el.textContent = translation;
+                }
+            }
+        });
+
+        // Alt text
+        element.querySelectorAll('[alt]').forEach(el => {
+            const original = el.getAttribute('alt');
+            const translation = this.translations[this.currentLang][original];
+            if (translation) {
+                el.setAttribute('alt', translation);
+            }
+        });
+        
+        // Option texts
+        element.querySelectorAll('option').forEach(el => {
+            if (el.textContent.trim()) {
+                const original = el.textContent.trim();
+                const translation = this.translations[this.currentLang][original];
+                if (translation) {
+                    el.textContent = translation;
+                }
+            }
+        });
+    }
+
+    updateMetaTags() {
+        // Atualizar título da página
+        const titleElement = document.querySelector('title');
+        if (titleElement) {
+            const original = titleElement.textContent;
+            const parts = original.split(' | ');
+            if (parts.length > 1) {
+                const translation = this.translations[this.currentLang][parts[1]];
+                if (translation) {
+                    titleElement.textContent = `${parts[0]} | ${translation}`;
+                }
+            }
+        }
+    }
+
+    updateThemeInfo() {
+        const themeSpan = document.getElementById('current-theme');
+        if (themeSpan) {
+            const original = themeSpan.textContent;
+            const translation = this.translations[this.currentLang][original];
+            if (translation) {
+                themeSpan.textContent = translation;
+            }
+        }
+    }
+
+    loadLanguage() {
+        if (this.currentLang !== 'pt') {
+            this.translatePage();
+        }
+    }
+
+    observeDOM() {
+        // Observar mudanças no DOM para conteúdo dinâmico
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length) {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) { // Element node
+                            this.translateElements(node);
+                        }
+                    });
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    showLanguageNotification(lang) {
+        // Remover notificação existente
+        const existing = document.querySelector('.language-notification');
+        if (existing) existing.remove();
+
+        const messages = {
+            'pt': 'Idioma alterado para Português',
+            'en': 'Language changed to English'
+        };
+
+        const notification = document.createElement('div');
+        notification.className = 'language-notification';
+        notification.textContent = messages[lang];
+        
+        // Estilos
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1565C0;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10000;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Remover após 3 segundos
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Método para adicionar traduções dinamicamente
+    addTranslation(key, ptText, enText) {
+        if (!this.translations.pt[key]) {
+            this.translations.pt[key] = ptText;
+        }
+        if (!this.translations.en[key]) {
+            this.translations.en[key] = enText;
+        }
+    }
+
+    // Método para traduzir texto específico
+    translateText(text) {
+        return this.translations[this.currentLang][text] || text;
+    }
+}
+
+// Inicializar apenas se ainda não foi inicializado
+document.addEventListener('DOMContentLoaded', () => {
+    if (!window.urbanaTranslator) {
+        window.urbanaTranslator = new UrbanaTranslator();
+        
+        // Adicionar estilos CSS para o tradutor
+        const style = document.createElement('style');
+        style.textContent = `
+            .language-toggle {
+                display: flex;
+                gap: 5px;
+                margin: 0 10px;
+            }
+            
+            .lang-btn {
+                background: none;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 5px 10px;
+                cursor: pointer;
+                font-size: 0.85rem;
+                transition: all 0.2s;
+                font-family: 'Inter', sans-serif;
+            }
+            
+            .lang-btn:hover {
+                background: #f0f0f0;
+            }
+            
+            .lang-btn.active {
+                background: #1565C0;
+                color: white;
+                border-color: #1565C0;
+                font-weight: 500;
+            }
+            
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            
+            /* Para conteúdo que não deve ser traduzido */
+            .no-translate {
+                font-style: italic;
+                opacity: 0.8;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+});
+
+// Exportar para uso global
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = UrbanaTranslator;
+}

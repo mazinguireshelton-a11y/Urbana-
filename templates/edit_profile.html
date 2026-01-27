@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}URBANA | Editar Perfil{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <div class="card-header">
+            <h3>Editar Perfil</h3>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mb-3">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('edit_profile') }}">
+            <div class="form-group">
+                <label for="name">Nome Completo</label>
+                <input type="text" id="name" name="name" class="form-control" 
+                       value="{{ current_user.name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" class="form-control" 
+                       value="{{ current_user.email }}" disabled
+                       style="background-color: var(--gray-light);">
+                <small class="form-text">O email não pode ser alterado.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="organization">Organização</label>
+                <input type="text" id="organization" name="organization" class="form-control"
+                       value="{{ current_user.organization or '' }}"
+                       placeholder="Empresa, Universidade, etc.">
+            </div>
+
+            <hr class="my-4">
+
+            <h4 class="mb-3">Alterar Senha (opcional)</h4>
+            
+            <div class="form-group">
+                <label for="new_password">Nova Senha</label>
+                <input type="password" id="new_password" name="new_password" class="form-control"
+                       placeholder="Deixe em branco para manter a senha atual">
+                <small class="form-text">Mínimo 8 caracteres com letras e números</small>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">Confirmar Nova Senha</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                       placeholder="Digite a nova senha novamente">
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    Salvar Alterações
+                </button>
+                <a href="{{ url_for('profile') }}" class="btn btn-outline">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    function validatePasswords() {
+        if (newPassword.value || confirmPassword.value) {
+            if (newPassword.value !== confirmPassword.value) {
+                confirmPassword.classList.add('error');
+                confirmPassword.classList.remove('success');
+                return false;
+            } else {
+                confirmPassword.classList.remove('error');
+                confirmPassword.classList.add('success');
+                return true;
+            }
+        }
+        return true;
+    }
+    
+    newPassword.addEventListener('input', validatePasswords);
+    confirmPassword.addEventListener('input', validatePasswords);
+    
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!validatePasswords()) {
+            e.preventDefault();
+            alert('As senhas não coincidem!');
+        }
+    });
+});
+</script>
+{% endblock %}

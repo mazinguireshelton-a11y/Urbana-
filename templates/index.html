@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}URBANA | Planejamento Urbano{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Planejamento de Infraestrutura Urbana</h2>
+    
+    <form method="POST" action="/calculate" class="form-container">
+        <div class="form-group">
+            <label>Nome do Bairro / Cidade</label>
+            <input type="text" name="area_name" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>População Total</label>
+            <input type="number" name="population" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Área (km²)</label>
+            <input type="number" step="0.01" name="area_size" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Tipo de Construção</label>
+            <select name="building_type" class="form-control">
+                <option value="low">Baixa densidade</option>
+                <option value="medium">Média densidade</option>
+                <option value="high">Alta densidade</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Calcular Infraestrutura</button>
+    </form>
+</div>
+{% endblock %}

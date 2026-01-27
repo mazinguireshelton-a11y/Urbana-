@@ -1,0 +1,576 @@
+{% extends "base.html" %}
+
+{% block title %}URBANA | Relatório de Simulação{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <!-- Cabeçalho do relatório -->
+    <div class="report-header">
+        <div class="header-left">
+            <h1>📊 RELATÓRIO DE INFRAESTRUTURA URBANA</h1>
+            <p class="report-subtitle">Análise técnica completa para planejamento urbano</p>
+        </div>
+        <div class="header-right">
+            <div class="report-meta">
+                <span class="badge badge-success">SIMULAÇÃO #{{ sim_id }}</span>
+                <span class="meta-date">{{ current_date }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo executivo (card horizontal) -->
+    <div class="card summary-card">
+        <div class="summary-icon">🏙️</div>
+        <div class="summary-content">
+            <h3>RESUMO EXECUTIVO</h3>
+            <p>
+                Para uma população de <strong>{{ "{:,}".format(population).replace(",", ".") }} habitantes</strong> 
+                em <strong>{{ area_name }}</strong>, com área de <strong>{{ area_size }} km²</strong>, 
+                o sistema URBANA calculou as necessidades diárias de infraestrutura.
+            </p>
+        </div>
+    </div>
+
+    <!-- Grade de métricas principais -->
+    <div class="metrics-grid">
+        <div class="metric-card water-metric">
+            <div class="metric-icon">💧</div>
+            <div class="metric-content">
+                <h4>Água Necessária</h4>
+                <div class="metric-value">{{ "{:,.0f}".format(total_water).replace(",", ".") }} L/dia</div>
+                <div class="metric-detail">{{ water_per_capita }} L por pessoa/dia</div>
+            </div>
+        </div>
+
+        <div class="metric-card energy-metric">
+            <div class="metric-icon">⚡</div>
+            <div class="metric-content">
+                <h4>Energia Necessária</h4>
+                <div class="metric-value">{{ "{:,.0f}".format(total_energy).replace(",", ".") }} kWh/dia</div>
+                <div class="metric-detail">{{ energy_per_capita }} kWh por pessoa/dia</div>
+            </div>
+        </div>
+
+        <div class="metric-card density-metric">
+            <div class="metric-icon">🏢</div>
+            <div class="metric-content">
+                <h4>Densidade Populacional</h4>
+                <div class="metric-value">{{ "%.1f"|format(density) }} hab/km²</div>
+                <div class="metric-detail">
+                    {% if building_type == 'low' %}
+                    Baixa densidade
+                    {% elif building_type == 'medium' %}
+                    Média densidade
+                    {% else %}
+                    Alta densidade
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-card efficiency-metric">
+            <div class="metric-icon">📈</div>
+            <div class="metric-content">
+                <h4>Eficiência Urbana</h4>
+                <div class="metric-value">
+                    {% if density > 100 %}
+                    Alta
+                    {% elif density > 50 %}
+                    Média
+                    {% else %}
+                    Baixa
+                    {% endif %}
+                </div>
+                <div class="metric-detail">Índice de eficiência energética</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualização gráfica -->
+    <div class="card chart-card">
+        <div class="card-header">
+            <h3>📈 VISUALIZAÇÃO DE CONSUMO</h3>
+            <p class="chart-subtitle">Comparação entre recursos necessários</p>
+        </div>
+        <div class="chart-container">
+            <canvas id="consumptionChart"></canvas>
+        </div>
+        <div class="chart-legend">
+            <div class="legend-item">
+                <span class="legend-color" style="background-color: #1E88E5;"></span>
+                <span>Água: {{ "{:,.0f}".format(total_water).replace(",", ".") }} L/dia</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background-color: #43A047;"></span>
+                <span>Energia: {{ "{:,.0f}".format(total_energy).replace(",", ".") }} kWh/dia</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análise detalhada -->
+    <div class="two-columns">
+        <div class="card analysis-card">
+            <div class="card-header">
+                <h3>📋 ANÁLISE DE INFRAESTRUTURA</h3>
+            </div>
+            <div class="analysis-content">
+                <div class="analysis-item">
+                    <h4>Recomendações de Água</h4>
+                    <ul>
+                        <li>Estações de tratamento: {{ (total_water / 500000)|round(1) }} unidades</li>
+                        <li>Rede de distribuição: {{ (population / 1000)|round(1) }} km</li>
+                        <li>Reservatório necessário: {{ (total_water * 7 / 1000)|round(0) }} m³</li>
+                    </ul>
+                </div>
+                
+                <div class="analysis-item">
+                    <h4>Recomendações de Energia</h4>
+                    <ul>
+                        <li>Subestações: {{ (total_energy / 10000)|round(1) }} unidades</li>
+                        <li>Rede elétrica: {{ (population / 500)|round(1) }} km</li>
+                        <li>Potência instalada: {{ (total_energy / 24)|round(0) }} kW</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card comparison-card">
+            <div class="card-header">
+                <h3>📊 COMPARAÇÃO COM PADRÕES</h3>
+            </div>
+            <div class="comparison-content">
+                <div class="comparison-bar">
+                    <div class="bar-label">Consumo per capita (água)</div>
+                    <div class="bar-container">
+                        <div class="bar-value" style="width: {{ (water_per_capita / 150 * 100)|round(0) }}%">
+                            {{ water_per_capita }} L/dia
+                        </div>
+                    </div>
+                    <div class="bar-reference">Referência: 150 L/dia</div>
+                </div>
+                
+                <div class="comparison-bar">
+                    <div class="bar-label">Consumo per capita (energia)</div>
+                    <div class="bar-container">
+                        <div class="bar-value" style="width: {{ (energy_per_capita / 3 * 100)|round(0) }}%">
+                            {{ energy_per_capita }} kWh/dia
+                        </div>
+                    </div>
+                    <div class="bar-reference">Referência: 3 kWh/dia</div>
+                </div>
+                
+                <div class="comparison-stat">
+                    <div class="stat-label">Eficiência urbana</div>
+                    <div class="stat-value {% if density > 80 %}good{% elif density > 40 %}medium{% else %}low{% endif %}">
+                        {% if density > 80 %}
+                        ⭐ Alta eficiência
+                        {% elif density > 40 %}
+                        📊 Média eficiência
+                        {% else %}
+                        📉 Baixa eficiência
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé com ações -->
+    <div class="actions-footer">
+        <div class="actions-header">
+            <h3>📤 EXPORTAR E COMPARTILHAR</h3>
+            <p>Salve este relatório para apresentações ou análises futuras</p>
+        </div>
+        
+        <div class="actions-buttons">
+            <a href="/export/pdf/{{ sim_id }}" class="btn-action pdf-btn" target="_blank">
+                <span class="btn-icon">📄</span>
+                <span class="btn-text">Exportar PDF</span>
+                <span class="btn-hint">Relatório completo</span>
+            </a>
+            
+            <a href="/export/csv" class="btn-action csv-btn">
+                <span class="btn-icon">📊</span>
+                <span class="btn-text">Exportar CSV</span>
+                <span class="btn-hint">Dados brutos</span>
+            </a>
+            
+            <a href="/dashboard" class="btn-action dashboard-btn">
+                <span class="btn-icon">📈</span>
+                <span class="btn-text">Ver Dashboard</span>
+                <span class="btn-hint">Análise avançada</span>
+            </a>
+            
+            <a href="/" class="btn-action new-btn">
+                <span class="btn-icon">🔄</span>
+                <span class="btn-text">Nova Simulação</span>
+                <span class="btn-hint">Criar outro cenário</span>
+            </a>
+        </div>
+        
+        <div class="actions-footer-info">
+            <small>📌 <strong>URBANA v2.0</strong> • Simulação técnica para planejamento urbano • 
+            Gerado em {{ current_date }}</small>
+        </div>
+    </div>
+</div>
+
+<!-- Script para gráfico -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('consumptionChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Água', 'Energia'],
+            datasets: [{
+                label: 'Consumo Diário',
+                data: [{{ total_water }}, {{ total_energy }}],
+                backgroundColor: [
+                    'rgba(30, 136, 229, 0.8)',
+                    'rgba(67, 160, 71, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(30, 136, 229, 1)',
+                    'rgba(67, 160, 71, 1)'
+                ],
+                borderWidth: 1,
+                borderRadius: 8,
+                barPercentage: 0.6,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.label === 'Água') {
+                                label += new Intl.NumberFormat('pt-BR').format(context.parsed.y) + ' litros/dia';
+                            } else {
+                                label += new Intl.NumberFormat('pt-BR').format(context.parsed.y) + ' kWh/dia';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Consumo Diário'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 1000000) {
+                                return (value / 1000000).toFixed(1) + 'M';
+                            } else if (value >= 1000) {
+                                return (value / 1000).toFixed(1) + 'k';
+                            }
+                            return value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
+<!-- Estilos específicos para relatório -->
+<style>
+.report-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #1565C0;
+}
+
+.header-left h1 {
+    color: #1565C0;
+    margin-bottom: 5px;
+    font-size: 1.8rem;
+}
+
+.report-subtitle {
+    color: #666;
+    font-size: 1rem;
+}
+
+.report-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.meta-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Card de resumo */
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, #E3F2FD, #E8F5E9);
+    border-left: 6px solid #1565C0;
+    margin-bottom: 30px;
+}
+
+.summary-icon {
+    font-size: 3rem;
+}
+
+.summary-content h3 {
+    color: #2E7D32;
+    margin-bottom: 10px;
+}
+
+/* Grade de métricas */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.metric-card {
+    padding: 25px;
+    border-radius: 10px;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+}
+
+.water-metric { background: linear-gradient(135deg, #1E88E5, #0D47A1); }
+.energy-metric { background: linear-gradient(135deg, #43A047, #1B5E20); }
+.density-metric { background: linear-gradient(135deg, #5E35B1, #311B92); }
+.efficiency-metric { background: linear-gradient(135deg, #FB8C00, #E65100); }
+
+.metric-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.metric-detail {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+/* Gráfico */
+.chart-card {
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    height: 300px;
+    margin: 20px 0;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+/* Layout duas colunas */
+.two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.analysis-item, .comparison-bar {
+    margin-bottom: 25px;
+}
+
+.analysis-item h4 {
+    color: #1565C0;
+    margin-bottom: 10px;
+}
+
+.analysis-item ul {
+    padding-left: 20px;
+}
+
+.analysis-item li {
+    margin-bottom: 5px;
+    color: #555;
+}
+
+/* Barras de comparação */
+.bar-container {
+    height: 30px;
+    background: #E0E0E0;
+    border-radius: 15px;
+    margin: 10px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.bar-value {
+    height: 100%;
+    background: linear-gradient(90deg, #1565C0, #2E7D32);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: width 1s ease;
+}
+
+.bar-label {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.bar-reference {
+    font-size: 0.85rem;
+    color: #666;
+    text-align: right;
+}
+
+/* Status */
+.stat-value.good { color: #2E7D32; }
+.stat-value.medium { color: #FB8C00; }
+.stat-value.low { color: #E53935; }
+
+/* Rodapé de ações */
+.actions-footer {
+    background: #F5F5F5;
+    border-radius: 10px;
+    padding: 30px;
+    margin-top: 40px;
+}
+
+.actions-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.actions-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.btn-action {
+    background: white;
+    border: 2px solid #E0E0E0;
+    border-radius: 10px;
+    padding: 20px;
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.pdf-btn:hover { border-color: #E53935; background: #FFEBEE; }
+.csv-btn:hover { border-color: #1565C0; background: #E3F2FD; }
+.dashboard-btn:hover { border-color: #2E7D32; background: #E8F5E9; }
+.new-btn:hover { border-color: #5E35B1; background: #EDE7F6; }
+
+.btn-icon {
+    font-size: 2rem;
+}
+
+.btn-text {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.btn-hint {
+    font-size: 0.85rem;
+    color: #666;
+    text-align: center;
+}
+
+.actions-footer-info {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #E0E0E0;
+    color: #666;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .report-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .report-meta {
+        align-items: center;
+    }
+    
+    .two-columns {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .actions-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

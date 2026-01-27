@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}URBANA | Termos de Serviço{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-file-contract me-2"></i>Termos de Serviço</h3>
+                </div>
+                
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h4 class="text-primary">1. Aceitação dos Termos</h4>
+                        <p class="text-muted">
+                            Ao acessar e usar o sistema URBANA, você concorda com estes Termos de Serviço.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="text-primary">2. Uso do Serviço</h4>
+                        <p class="text-muted">
+                            O URBANA é uma ferramenta para planejamento urbano. Você é responsável pela
+                            precisão dos dados inseridos e pelas decisões tomadas com base nas simulações.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="text-primary">3. Conta do Usuário</h4>
+                        <p class="text-muted">
+                            Você deve fornecer informações precisas ao criar sua conta. É sua
+                            responsabilidade manter a confidencialidade de suas credenciais.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="text-primary">4. Propriedade Intelectual</h4>
+                        <p class="text-muted">
+                            O software URBANA é protegido por direitos autorais. Os dados das simulações
+                            são de propriedade do usuário que os criou.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="text-primary">5. Limitação de Responsabilidade</h4>
+                        <p class="text-muted">
+                            O URBANA é fornecido "como está". Não garantimos a precisão absoluta das
+                            simulações para casos específicos.
+                        </p>
+                    </div>
+                    
+                    <div class="text-center mt-5">
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary me-2">
+                            Voltar para Cadastro
+                        </a>
+                        <a href="{{ url_for('privacy') }}" class="btn btn-primary">
+                            Ver Política de Privacidade
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1072 @@
+{% extends "base.html" %}
+
+{% block title %}URBANA | Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="page-title">📊 Dashboard Analítico</h1>
+    <p class="page-subtitle">Visualização completa das suas simulações urbanas</p>
+</div>
+
+<!-- CARDS DE MÉTRICAS PRINCIPAIS -->
+<div class="grid grid-4 mb-5">
+    <div class="metric-card">
+        <div class="metric-icon">📈</div>
+        <div class="metric-value">{{ stats.total_simulations }}</div>
+        <div class="metric-label">Total de Simulações</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">👥</div>
+        <div class="metric-value">{{ stats.total_population }}</div>
+        <div class="metric-label">População Total</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">💧</div>
+        <div class="metric-value">{{ stats.avg_water|int }}</div>
+        <div class="metric-label">Água Média/dia</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">⚡</div>
+        <div class="metric-value">{{ stats.avg_energy|int }}</div>
+        <div class="metric-label">Energia Média/dia</div>
+    </div>
+</div>
+
+<!-- GRÁFICOS PRINCIPAIS -->
+<div class="grid grid-2 mb-5">
+    <!-- GRÁFICO DE BARRAS HORIZONTAL MODERNO -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">🏙️ Consumo por Localidade</h3>
+            <span class="card-subtitle">Comparativo entre áreas urbanas</span>
+        </div>
+        <div class="chart-container">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+        <div class="chart-footer">
+            <div class="legend">
+                <div class="legend-item">
+                    <span class="legend-color water-color"></span>
+                    <span>Água (milhões de litros/dia)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color energy-color"></span>
+                    <span>Energia (milhares de kWh/dia)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- GRÁFICO DE ROSCA (DONUT) MODERNO -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">🏢 Distribuição por Densidade</h3>
+            <span class="card-subtitle">Tipos de construção nas simulações</span>
+        </div>
+        <div class="chart-container">
+            <canvas id="typeChart"></canvas>
+        </div>
+        <div class="chart-footer">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="lowCount">0</div>
+                    <div class="stat-label">Baixa Densidade</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="mediumCount">0</div>
+                    <div class="stat-label">Média Densidade</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="highCount">0</div>
+                    <div class="stat-label">Alta Densidade</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GRÁFICO DE TENDÊNCIA -->
+<div class="card mb-5">
+    <div class="card-header">
+        <h3 class="card-title">📈 Evolução Temporal</h3>
+        <span class="card-subtitle">Tendência dos últimos 7 dias</span>
+    </div>
+    <div class="chart-container">
+        <canvas id="trendChart"></canvas>
+    </div>
+    <div class="chart-footer">
+        <div class="trend-legend">
+            <div class="trend-item">
+                <span class="trend-icon">📊</span>
+                <span>Número de Simulações</span>
+            </div>
+            <div class="trend-item">
+                <span class="trend-icon">💧</span>
+                <span>Consumo Médio de Água</span>
+            </div>
+            <div class="trend-item">
+                <span class="trend-icon">⚡</span>
+                <span>Consumo Médio de Energia</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABELA DE SIMULAÇÕES -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">📋 Histórico de Simulações</h3>
+        <div class="d-flex gap-2 align-items-center">
+            <input type="text" class="form-control" placeholder="🔍 Buscar local..." id="searchTable" style="width: 200px;">
+            <select class="form-control" id="filterType" style="width: 180px;">
+                <option value="">📂 Todos os tipos</option>
+                <option value="low">🏡 Baixa densidade</option>
+                <option value="medium">🏢 Média densidade</option>
+                <option value="high">🏙️ Alta densidade</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>📍 Local</th>
+                    <th>👥 População</th>
+                    <th>📏 Área (km²)</th>
+                    <th>🏢 Tipo</th>
+                    <th>💧 Água (L/dia)</th>
+                    <th>⚡ Energia (kWh/dia)</th>
+                    <th>📅 Data</th>
+                    <th>⚙️ Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sim in simulations %}
+                <tr>
+                    <td><strong>{{ sim.area_name }}</strong></td>
+                    <td>{{ "{:,}".format(sim.population).replace(",", ".") }}</td>
+                    <td>{{ sim.area_size }}</td>
+                    <td>
+                        <span class="badge {% if sim.building_type == 'low' %}badge-low
+                                        {% elif sim.building_type == 'medium' %}badge-medium
+                                        {% else %}badge-high{% endif %}">
+                            {% if sim.building_type == 'low' %}🏡
+                            {% elif sim.building_type == 'medium' %}🏢
+                            {% else %}🏙️{% endif %}
+                            {{ sim.building_type|replace('low', 'Baixa')|replace('medium', 'Média')|replace('high', 'Alta') }}
+                        </span>
+                    </td>
+                    <td>{{ "{:,}".format(sim.total_water).replace(",", ".") }}</td>
+                    <td>{{ "{:,}".format(sim.total_energy).replace(",", ".") }}</td>
+                    <td>{{ format_date(sim.created_at, '%d/%m/%Y') }}</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="/report/{{ sim.id }}" class="btn btn-sm btn-primary" title="Ver relatório">
+                                <span class="btn-icon">👁️</span>
+                            </a>
+                            <button onclick="deleteSimulation({{ sim.id }})" class="btn btn-sm btn-danger" title="Excluir">
+                                <span class="btn-icon">🗑️</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center p-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">📊</div>
+                            <h4>Nenhuma simulação encontrada</h4>
+                            <p>Crie sua primeira simulação para ver os dados aqui</p>
+                            <a href="/" class="btn btn-primary mt-3">
+                                <span class="btn-icon">➕</span> Criar Primeira Simulação
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚀 Inicializando dashboard URBANA...");
+    
+    // Cores modernas e harmoniosas
+    const colors = {
+        water: {
+            gradient: ['#1E88E5', '#0D47A1'],
+            solid: 'rgba(30, 136, 229, 0.95)',
+            light: 'rgba(30, 136, 229, 0.2)'
+        },
+        energy: {
+            gradient: ['#43A047', '#1B5E20'],
+            solid: 'rgba(67, 160, 71, 0.95)',
+            light: 'rgba(67, 160, 71, 0.2)'
+        },
+        types: {
+            low: 'rgba(30, 136, 229, 0.85)',
+            medium: 'rgba(67, 160, 71, 0.85)',
+            high: 'rgba(255, 152, 0, 0.85)'
+        },
+        trend: {
+            simulations: 'rgba(156, 39, 176, 0.9)',
+            water: 'rgba(30, 136, 229, 0.9)',
+            energy: 'rgba(67, 160, 71, 0.9)'
+        }
+    };
+    
+    // 1. GRÁFICO DE BARRAS HORIZONTAL - Consumo por Localidade
+    const ctx1 = document.getElementById('comparisonChart');
+    if (ctx1) {
+        try {
+            const areas = JSON.parse('{{ areas|safe }}');
+            const waterValues = JSON.parse('{{ water_values|safe }}');
+            const energyValues = JSON.parse('{{ energy_values|safe }}');
+            
+            // Formatar valores para melhor visualização
+            const formattedWater = waterValues.map(v => (v / 1000000).toFixed(1));
+            const formattedEnergy = energyValues.map(v => (v / 1000).toFixed(1));
+            
+            console.log("📊 Dados gráfico localidade:", areas);
+            
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: areas,
+                    datasets: [
+                        {
+                            label: 'Água',
+                            data: formattedWater,
+                            backgroundColor: createVerticalGradient(ctx1, colors.water.gradient),
+                            borderColor: colors.water.solid,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            barPercentage: 0.7,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            label: 'Energia',
+                            data: formattedEnergy,
+                            backgroundColor: createVerticalGradient(ctx1, colors.energy.gradient),
+                            borderColor: colors.energy.solid,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            barPercentage: 0.7,
+                            categoryPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255, 255, 255, 0.15)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            padding: 12,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.datasetIndex === 0) {
+                                        label += context.parsed.y + 'M L/dia';
+                                    } else {
+                                        label += context.parsed.y + 'k kWh/dia';
+                                    }
+                                    return label;
+                                },
+                                title: function(tooltipItems) {
+                                    return areas[tooltipItems[0].dataIndex];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#555',
+                                font: {
+                                    size: 11,
+                                    family: "'Inter', sans-serif"
+                                },
+                                maxRotation: 45
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#555',
+                                callback: function(value) {
+                                    return value + (context.datasetIndex === 0 ? 'M' : 'k');
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Consumo Diário',
+                                color: '#666',
+                                font: {
+                                    size: 12,
+                                    weight: '600',
+                                    family: "'Inter', sans-serif"
+                                },
+                                padding: {top: 10, bottom: 20}
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1200,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+            
+            console.log("✅ Gráfico de localidades criado");
+        } catch (error) {
+            console.error("❌ Erro no gráfico:", error);
+            showChartError(ctx1, "Crie simulações para visualizar os dados");
+        }
+    }
+    
+    // 2. GRÁFICO DE ROSCA - Distribuição por Tipo
+    const ctx2 = document.getElementById('typeChart');
+    if (ctx2) {
+        try {
+            const tipoLabels = JSON.parse('{{ tipo_labels|safe }}');
+            const tipoCounts = JSON.parse('{{ tipo_counts|safe }}');
+            
+            // Atualizar contadores
+            tipoLabels.forEach((label, index) => {
+                const count = tipoCounts[index];
+                if (label.includes('Baixa')) {
+                    document.getElementById('lowCount').textContent = count;
+                    document.getElementById('lowCount').style.color = colors.types.low;
+                }
+                if (label.includes('Média')) {
+                    document.getElementById('mediumCount').textContent = count;
+                    document.getElementById('mediumCount').style.color = colors.types.medium;
+                }
+                if (label.includes('Alta')) {
+                    document.getElementById('highCount').textContent = count;
+                    document.getElementById('highCount').style.color = colors.types.high;
+                }
+            });
+            
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: tipoLabels,
+                    datasets: [{
+                        data: tipoCounts,
+                        backgroundColor: [
+                            colors.types.low,
+                            colors.types.medium,
+                            colors.types.high
+                        ],
+                        borderColor: 'rgba(255, 255, 255, 0.9)',
+                        borderWidth: 2,
+                        borderRadius: 3,
+                        spacing: 3,
+                        hoverOffset: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    radius: '85%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255, 255, 255, 0.15)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((context.parsed / total) * 100);
+                                    return `${context.label}: ${context.parsed} simulação(ões) (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+            
+            console.log("✅ Gráfico de distribuição criado");
+        } catch (error) {
+            console.error("❌ Erro no gráfico de tipos:", error);
+            showChartError(ctx2, "Crie simulações com diferentes tipos de construção");
+        }
+    }
+    
+    // 3. GRÁFICO DE TENDÊNCIA
+    const ctx3 = document.getElementById('trendChart');
+    if (ctx3) {
+        try {
+            const dates = JSON.parse('{{ dates|safe }}');
+            const simCounts = JSON.parse('{{ sim_counts|safe }}');
+            const trendWater = JSON.parse('{{ trend_water|safe }}');
+            const trendEnergy = JSON.parse('{{ trend_energy|safe }}');
+            
+            // Normalizar dados para escala adequada
+            const maxWater = Math.max(...trendWater.filter(v => !isNaN(v)));
+            const maxEnergy = Math.max(...trendEnergy.filter(v => !isNaN(v)));
+            const scaleFactor = maxWater > 0 ? maxWater / maxEnergy : 1;
+            
+            const normalizedEnergy = trendEnergy.map(v => v * scaleFactor);
+            
+            new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Simulações',
+                            data: simCounts,
+                            borderColor: colors.trend.simulations,
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: false,
+                            pointBackgroundColor: colors.trend.simulations,
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Água Média',
+                            data: trendWater,
+                            borderColor: colors.trend.water,
+                            backgroundColor: 'transparent',
+                            borderWidth: 2.5,
+                            tension: 0.3,
+                            fill: false,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: colors.trend.water,
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Energia Média',
+                            data: normalizedEnergy,
+                            borderColor: colors.trend.energy,
+                            backgroundColor: 'transparent',
+                            borderWidth: 2.5,
+                            tension: 0.3,
+                            fill: false,
+                            borderDash: [10, 5],
+                            pointBackgroundColor: colors.trend.energy,
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#555',
+                                font: {
+                                    size: 12,
+                                    family: "'Inter', sans-serif"
+                                },
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255, 255, 255, 0.15)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            padding: 12,
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#555',
+                                font: {
+                                    size: 11,
+                                    family: "'Inter', sans-serif"
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#555'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Valores',
+                                color: '#666',
+                                font: {
+                                    size: 12,
+                                    weight: '600',
+                                    family: "'Inter', sans-serif"
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1800,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+            
+            console.log("✅ Gráfico de tendência criado");
+        } catch (error) {
+            console.error("❌ Erro no gráfico de tendência:", error);
+            showChartError(ctx3, "Não há dados suficientes para mostrar tendência");
+        }
+    }
+    
+    // FUNÇÕES AUXILIARES
+    function createVerticalGradient(ctx, colors) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, ctx.height);
+        gradient.addColorStop(0, colors[0]);
+        gradient.addColorStop(1, colors[1]);
+        return gradient;
+    }
+    
+    function showChartError(canvasElement, message) {
+        const container = canvasElement.parentElement;
+        container.innerHTML = `
+            <div class="chart-error">
+                <div class="error-icon">📊</div>
+                <h4>Visualização Indisponível</h4>
+                <p>${message}</p>
+                <small>Os dados aparecerão automaticamente após criar simulações</small>
+            </div>
+        `;
+    }
+    
+    // FILTRO DA TABELA
+    const searchInput = document.getElementById('searchTable');
+    const filterSelect = document.getElementById('filterType');
+    const tableRows = document.querySelectorAll('.table tbody tr');
+    
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const filterType = filterSelect.value;
+        
+        tableRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 4) {
+                const name = cells[0].textContent.toLowerCase();
+                const typeBadge = cells[3].querySelector('.badge');
+                const type = typeBadge ? typeBadge.textContent.toLowerCase() : '';
+                
+                const typeMatch = !filterType || 
+                    (filterType === 'low' && type.includes('baixa')) ||
+                    (filterType === 'medium' && type.includes('média')) ||
+                    (filterType === 'high' && type.includes('alta'));
+                
+                const nameMatch = name.includes(searchTerm);
+                
+                row.style.display = (nameMatch && typeMatch) ? '' : 'none';
+            }
+        });
+    }
+    
+    if (searchInput) searchInput.addEventListener('input', filterTable);
+    if (filterSelect) filterSelect.addEventListener('change', filterTable);
+    
+    // Animar métricas
+    animateMetrics();
+});
+
+function animateMetrics() {
+    const metricValues = document.querySelectorAll('.metric-value');
+    metricValues.forEach(value => {
+        const target = parseInt(value.textContent.replace(/\./g, ''));
+        if (!isNaN(target) && target > 0) {
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    value.textContent = target.toLocaleString('pt-BR');
+                    clearInterval(timer);
+                } else {
+                    value.textContent = Math.floor(current).toLocaleString('pt-BR');
+                }
+            }, 30);
+        }
+    });
+}
+
+function deleteSimulation(simId) {
+    if (confirm('Tem certeza que deseja excluir esta simulação?\nEsta ação não pode ser desfeita.')) {
+        fetch(`/delete/${simId}`, { 
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                showNotification('✅ Simulação excluída com sucesso!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('❌ Erro ao excluir simulação.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            showNotification('❌ Erro de conexão.', 'error');
+        });
+    }
+}
+
+function showNotification(message, type) {
+    // Criar notificação
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <span class="notification-icon">${type === 'success' ? '✅' : '❌'}</span>
+        <span class="notification-text">${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Mostrar
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
+
+<style>
+/* ESTILOS ESPECÍFICOS DO DASHBOARD */
+.dashboard-header {
+    margin-bottom: 2.5rem;
+}
+
+.page-title {
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-subtitle {
+    color: var(--gray-600);
+    font-size: 1.1rem;
+    max-width: 600px;
+}
+
+/* CARDS DE MÉTRICAS */
+.metric-card {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 15px rgba(21, 101, 192, 0.15);
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(21, 101, 192, 0.25);
+}
+
+.metric-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.9;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0.5rem 0;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+/* GRÁFICOS */
+.chart-container {
+    position: relative;
+    height: 320px;
+    width: 100%;
+    padding: 1.25rem;
+}
+
+.chart-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+/* LEGENDAS */
+.legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--gray-600);
+}
+
+.legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.water-color {
+    background: linear-gradient(135deg, #1E88E5, #0D47A1);
+}
+
+.energy-color {
+    background: linear-gradient(135deg, #43A047, #1B5E20);
+}
+
+/* ESTATÍSTICAS */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    text-align: center;
+}
+
+.stat-item {
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* TENDÊNCIA */
+.trend-legend {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.trend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.trend-icon {
+    font-size: 1.1rem;
+}
+
+/* ERRO NO GRÁFICO */
+.chart-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 2rem;
+    color: var(--gray-600);
+}
+
+.error-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+}
+
+.chart-error h4 {
+    margin-bottom: 0.5rem;
+    color: var(--gray-700);
+    font-weight: 600;
+}
+
+.chart-error p {
+    margin-bottom: 0.25rem;
+    color: var(--gray-600);
+}
+
+.chart-error small {
+    opacity: 0.7;
+    font-size: 0.85rem;
+}
+
+/* TABELA */
+.table th {
+    background: linear-gradient(135deg, var(--color-primary), var(--gray-800));
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    border: none;
+}
+
+.table td {
+    padding: 0.875rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.table tbody tr:hover {
+    background: rgba(21, 101, 192, 0.03);
+}
+
+/* BADGES */
+.badge-low {
+    background: rgba(30, 136, 229, 0.12);
+    color: #1E88E5;
+    border: 1px solid rgba(30, 136, 229, 0.2);
+}
+
+.badge-medium {
+    background: rgba(67, 160, 71, 0.12);
+    color: #43A047;
+    border: 1px solid rgba(67, 160, 71, 0.2);
+}
+
+.badge-high {
+    background: rgba(255, 152, 0, 0.12);
+    color: #FB8C00;
+    border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+/* ESTADO VAZIO */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.empty-state h4 {
+    margin-bottom: 0.5rem;
+    color: var(--gray-700);
+}
+
+.empty-state p {
+    color: var(--gray-600);
+    margin-bottom: 1.5rem;
+}
+
+/* NOTIFICAÇÕES */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    z-index: 1000;
+    transform: translateX(120%);
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border-left: 4px solid;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-success {
+    border-left-color: var(--color-success);
+}
+
+.notification-error {
+    border-left-color: var(--color-error);
+}
+
+.notification-icon {
+    font-size: 1.2rem;
+}
+
+.notification-text {
+    font-weight: 500;
+    color: var(--gray-800);
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 1200px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        height: 280px;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 1.75rem;
+    }
+    
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+        padding: 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .trend-legend {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .table {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        height: 220px;
+    }
+    
+    .legend {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}

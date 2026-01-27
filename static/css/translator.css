@@ -1,0 +1,39 @@
+/* Estilos para o tradutor */
+.language-selector {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 15px;
+    gap: 5px;
+}
+
+.language-selector select {
+    padding: 4px 8px;
+    border: 1px solid var(--gray-300);
+    border-radius: 4px;
+    background: white;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.language-selector select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.language-flag {
+    font-size: 1.2rem;
+    margin-right: 5px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .language-selector {
+        margin-left: 10px;
+        margin-right: auto;
+    }
+    
+    .language-selector select {
+        font-size: 0.8rem;
+        padding: 3px 6px;
+    }
+}

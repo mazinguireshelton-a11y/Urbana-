@@ -1,0 +1,632 @@
+/* =========================================== */
+/* SISTEMA DE TEMAS - URBANA                   */
+/* Controle completo de tema claro/escuro      */
+/* =========================================== */
+
+/* ========== 1. VARIÁVEIS DE TEMA CLARO (JÁ EM :root) ========== */
+/* As variáveis do tema claro já estão definidas no :root do style.css */
+
+/* ========== 2. VARIÁVEIS DE TEMA ESCURO ========== */
+[data-theme="dark"] {
+    /* 🎯 CORES PRIMÁRIAS - TEMA ESCURO */
+    --color-primary: #64B5F6;
+    --color-secondary: #81C784;
+    --color-dark: #F9FAFB;
+    --color-light: #1F2937;
+    --color-white: #111827;
+    
+    /* 🎯 TONS DE CINZA - TEMA ESCURO (invertidos) */
+    --gray-50: #111827;
+    --gray-100: #1F2937;
+    --gray-200: #374151;
+    --gray-300: #4B5563;
+    --gray-400: #6B7280;
+    --gray-500: #9CA3AF;
+    --gray-600: #D1D5DB;
+    --gray-700: #E5E7EB;
+    --gray-800: #F3F4F6;
+    --gray-900: #F9FAFB;
+    
+    /* 🎯 TOKENS SEMÂNTICOS DE TEXTO - TEMA ESCURO */
+    --text-primary: var(--gray-100);
+    --text-secondary: var(--gray-300);
+    --text-muted: var(--gray-400);
+    --text-light: var(--gray-900);
+    
+    /* 🎯 TOKENS SEMÂNTICOS DE FUNDO - TEMA ESCURO */
+    --bg-body: #0F172A;
+    --bg-card: #1E293B;
+    --bg-header: linear-gradient(135deg, #1E40AF 0%, #065F46 100%);
+    --bg-footer: #0F172A;
+    --bg-navbar: #1E293B;
+    
+    /* 🎯 CORES DE BORDA - TEMA ESCURO */
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-card: rgba(255, 255, 255, 0.1);
+    
+    /* 🎯 SOMBRAS - TEMA ESCURO */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+}
+
+/* ========== 3. APLICAÇÃO DAS VARIÁVEIS DE TEMA ========== */
+/* Os estilos principais já aplicam as variáveis, aqui são ajustes específicos */
+
+[data-theme="dark"] body {
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+}
+
+/* NAVBAR ESCURA */
+[data-theme="dark"] .navbar {
+    background-color: var(--bg-navbar);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .nav-link {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .nav-link:hover {
+    background-color: rgba(100, 181, 246, 0.1);
+    color: var(--color-primary);
+}
+
+[data-theme="dark"] .nav-link.active {
+    background-color: var(--color-primary);
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .user-name {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .user-avatar {
+    background-color: rgba(100, 181, 246, 0.2);
+    color: var(--color-primary);
+}
+
+/* CARDS ESCUROS */
+[data-theme="dark"] .card {
+    background-color: var(--bg-card);
+    border-color: var(--border-card);
+    box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .card:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-xl);
+}
+
+[data-theme="dark"] .card-header {
+    border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .card-footer {
+    border-top-color: var(--border-color);
+}
+
+/* TABELAS ESCURAS */
+[data-theme="dark"] .table-container {
+    background-color: var(--bg-card);
+    box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .table thead {
+    background: var(--bg-header);
+}
+
+[data-theme="dark"] .table th {
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .table tbody tr {
+    border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .table tbody tr:hover {
+    background-color: rgba(100, 181, 246, 0.05);
+}
+
+[data-theme="dark"] .table td {
+    color: var(--text-primary);
+}
+
+/* FORMULÁRIOS ESCUROS */
+[data-theme="dark"] .form-control {
+    background-color: rgba(30, 41, 59, 0.7);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-control:focus {
+    background-color: rgba(30, 41, 59, 0.9);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.1);
+}
+
+[data-theme="dark"] .form-control:disabled {
+    background-color: rgba(30, 41, 59, 0.4);
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .form-label {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .form-text {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .form-check-label {
+    color: var(--text-secondary);
+}
+
+/* BOTÕES ESCUROS */
+[data-theme="dark"] .btn-outline {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+[data-theme="dark"] .btn-outline:hover {
+    background-color: var(--color-primary);
+    color: var(--text-light);
+}
+
+/* BADGES ESCUROS */
+[data-theme="dark"] .badge-primary {
+    background-color: rgba(100, 181, 246, 0.15);
+    border-color: rgba(100, 181, 246, 0.3);
+    color: var(--color-primary);
+}
+
+[data-theme="dark"] .badge-secondary {
+    background-color: rgba(129, 199, 132, 0.15);
+    border-color: rgba(129, 199, 132, 0.3);
+    color: var(--color-secondary);
+}
+
+[data-theme="dark"] .badge-success {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: var(--color-success);
+}
+
+[data-theme="dark"] .badge-warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: var(--color-warning);
+}
+
+[data-theme="dark"] .badge-danger {
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--color-error);
+}
+
+[data-theme="dark"] .badge-info {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: var(--color-info);
+}
+
+/* ALERTAS ESCUROS */
+[data-theme="dark"] .alert {
+    background-color: rgba(30, 41, 59, 0.8);
+    border-left-color: var(--color-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .alert-success {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-left-color: var(--color-success);
+    color: var(--color-success);
+}
+
+[data-theme="dark"] .alert-danger {
+    background-color: rgba(239, 68, 68, 0.15);
+    border-left-color: var(--color-error);
+    color: var(--color-error);
+}
+
+[data-theme="dark"] .alert-info {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-left-color: var(--color-info);
+    color: var(--color-info);
+}
+
+[data-theme="dark"] .alert-warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    border-left-color: var(--color-warning);
+    color: var(--color-warning);
+}
+
+[data-theme="dark"] .alert-message {
+    color: var(--text-secondary);
+}
+
+/* COMPONENTES ESPECIAIS ESCUROS */
+[data-theme="dark"] .modal-content {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .dropdown-menu {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+    background-color: rgba(100, 181, 246, 0.1);
+}
+
+[data-theme="dark"] .dropdown-divider {
+    background-color: var(--border-color);
+}
+
+[data-theme="dark"] .tooltip .tooltip-text {
+    background-color: var(--color-dark);
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .tooltip .tooltip-text::after {
+    border-color: var(--color-dark) transparent transparent transparent;
+}
+
+[data-theme="dark"] .progress {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .spinner {
+    border-color: rgba(255, 255, 255, 0.2);
+    border-top-color: var(--color-primary);
+}
+
+[data-theme="dark"] .tabs {
+    border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .tab {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .tab:hover {
+    color: var(--color-primary);
+}
+
+[data-theme="dark"] .tab.active {
+    color: var(--color-primary);
+}
+
+[data-theme="dark"] .accordion {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .accordion-item {
+    border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .accordion-header {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .accordion-header:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .breadcrumb-item {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .breadcrumb-item.active {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .page-link {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .page-link:hover {
+    background-color: rgba(100, 181, 246, 0.1);
+    border-color: var(--color-primary);
+}
+
+[data-theme="dark"] .page-item.active .page-link {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--text-light);
+}
+
+/* GRÁFICOS ESCUROS */
+[data-theme="dark"] .chart-container {
+    background-color: var(--bg-card);
+}
+
+[data-theme="dark"] .chart-title {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .chart-footer {
+    border-top-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+/* UTILIDADES ESCURAS */
+[data-theme="dark"] .border {
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: var(--gray-100) !important;
+}
+
+[data-theme="dark"] .text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* SCROLLBAR ESCURA */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--gray-800);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: var(--bg-header);
+    border-color: var(--gray-800);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #1E3A8A 0%, #064E3B 100%);
+}
+
+/* LOADING ESCURO */
+[data-theme="dark"] .loading::after {
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+}
+
+[data-theme="dark"] .skeleton {
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.05) 25%, 
+        rgba(255, 255, 255, 0.1) 50%, 
+        rgba(255, 255, 255, 0.05) 75%);
+}
+
+/* THEME TOGGER ESCURO */
+[data-theme="dark"] .theme-toggle {
+    border-color: var(--border-color);
+    background-color: var(--bg-card);
+}
+
+[data-theme="dark"] .theme-btn {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .theme-btn:hover {
+    background-color: rgba(100, 181, 246, 0.1);
+}
+
+[data-theme="dark"] .theme-info {
+    color: var(--text-muted);
+}
+
+/* ========== 4. AUTO-TEMA (PREFERÊNCIA DO SISTEMA) ========== */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        /* Aplica tema escuro apenas se o usuário não forçou o tema claro */
+        --color-primary: #64B5F6;
+        --color-secondary: #81C784;
+        --color-dark: #F9FAFB;
+        --color-light: #1F2937;
+        --color-white: #111827;
+        
+        --gray-50: #111827;
+        --gray-100: #1F2937;
+        --gray-200: #374151;
+        --gray-300: #4B5563;
+        --gray-400: #6B7280;
+        --gray-500: #9CA3AF;
+        --gray-600: #D1D5DB;
+        --gray-700: #E5E7EB;
+        --gray-800: #F3F4F6;
+        --gray-900: #F9FAFB;
+        
+        --text-primary: var(--gray-100);
+        --text-secondary: var(--gray-300);
+        --text-muted: var(--gray-400);
+        --text-light: var(--gray-900);
+        
+        --bg-body: #0F172A;
+        --bg-card: #1E293B;
+        --bg-header: linear-gradient(135deg, #1E40AF 0%, #065F46 100%);
+        --bg-footer: #0F172A;
+        --bg-navbar: #1E293B;
+        
+        --border-color: rgba(255, 255, 255, 0.1);
+        --border-card: rgba(255, 255, 255, 0.1);
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        /* Aplica tema claro apenas se o usuário não forçou o tema escuro */
+        --color-primary: #1565C0;
+        --color-secondary: #2E7D32;
+        --color-dark: #0A2540;
+        --color-light: #F8FAFC;
+        --color-white: #FFFFFF;
+        
+        --gray-50: #F9FAFB;
+        --gray-100: #F3F4F6;
+        --gray-200: #E5E7EB;
+        --gray-300: #D1D5DB;
+        --gray-400: #9CA3AF;
+        --gray-500: #6B7280;
+        --gray-600: #4B5563;
+        --gray-700: #374151;
+        --gray-800: #1F2937;
+        --gray-900: #111827;
+        
+        --text-primary: var(--color-dark);
+        --text-secondary: var(--gray-700);
+        --text-muted: var(--gray-600);
+        --text-light: var(--color-white);
+        
+        --bg-body: var(--color-light);
+        --bg-card: var(--color-white);
+        --bg-header: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+        --bg-footer: var(--color-dark);
+        --bg-navbar: var(--color-white);
+        
+        --border-color: var(--gray-200);
+        --border-card: var(--gray-200);
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* ========== 5. CONTRASTE ALTO (ACESSIBILIDADE) ========== */
+[data-contrast="high"] {
+    --color-primary: #0D47A1;
+    --color-secondary: #1B5E20;
+    --text-primary: #000000;
+    --text-secondary: #1A1A1A;
+    --border-color: #000000;
+}
+
+[data-contrast="high"][data-theme="dark"] {
+    --color-primary: #1565C0;
+    --color-secondary: #2E7D32;
+    --text-primary: #FFFFFF;
+    --text-secondary: #F0F0F0;
+    --border-color: #FFFFFF;
+}
+
+/* ========== 6. ANIMAÇÕES DE TRANSIÇÃO DE TEMA ========== */
+.theme-transition * {
+    transition: background-color 0.3s ease, 
+                border-color 0.3s ease, 
+                color 0.3s ease,
+                box-shadow 0.3s ease,
+                fill 0.3s ease,
+                stroke 0.3s ease !important;
+    transition-delay: 0s !important;
+}
+
+.theme-switch {
+    animation: theme-pulse 0.5s ease;
+}
+
+@keyframes theme-pulse {
+    0% {
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ========== 7. INDICADOR VISUAL DE TEMA ========== */
+.theme-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--bg-header);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    font-size: 1.2rem;
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-toast);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.theme-indicator:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* ========== 8. RESPONSIVIDADE PARA TEMA ========== */
+@media (max-width: 768px) {
+    [data-theme="dark"] .theme-toggle {
+        margin-right: 0.5rem;
+    }
+    
+    [data-theme="dark"] .theme-btn {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    [data-theme="dark"] .theme-indicator {
+        bottom: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    [data-theme="dark"] .theme-indicator {
+        bottom: 10px;
+        right: 10px;
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+}
+[data-theme="dark"] {
+    --text-primary: var(--gray-900);
+    --text-secondary: var(--gray-600);
+    --text-muted: var(--gray-500);
+}
+
+/* Corrige títulos com gradiente */
+[data-theme="dark"] .page-title {
+    background: none;
+    -webkit-text-fill-color: var(--text-light);
+}
+
+/* Placeholder visível */
+.form-control::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+}
+
+[data-theme="dark"] .form-control::placeholder {
+    color: var(--gray-500);
+}
+
+/* Links da navbar */
+[data-theme="dark"] .nav-link {
+    color: var(--gray-700);
+}

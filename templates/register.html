@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}URBANA | Cadastro{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card shadow-sm" style="max-width: 500px; margin: 0 auto;">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0"><i class="fas fa-user-plus me-2"></i>Criar Nova Conta</h3>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show m-3" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('register') }}" class="p-4">
+            <div class="form-group mb-3">
+                <label for="name" class="form-label">Nome Completo</label>
+                <input type="text" id="name" name="name" class="form-control" required 
+                       placeholder="Seu nome completo">
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="email" class="form-control" required 
+                       placeholder="seu.email@exemplo.com">
+                <small class="form-text text-muted">Usaremos este email para confirmar sua conta</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="password" class="form-label">Senha</label>
+                <input type="password" id="password" name="password" class="form-control" required 
+                       placeholder="Mínimo 8 caracteres">
+                <div class="progress mt-2" style="height: 5px;">
+                    <div id="password-strength" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <small class="form-text text-muted">Use pelo menos 8 caracteres com letras e números</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="confirm_password" class="form-label">Confirmar Senha</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required 
+                       placeholder="Digite a senha novamente">
+                <div id="password-match" class="mt-1" style="font-size: 0.85rem;"></div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="organization" class="form-label">Organização (opcional)</label>
+                <input type="text" id="organization" name="organization" class="form-control" 
+                       placeholder="Empresa, Universidade, etc.">
+            </div>
+
+            <div class="form-group mb-4">
+                <div class="form-check">
+                    <input type="checkbox" id="terms" name="terms" class="form-check-input" required>
+                    <label for="terms" class="form-check-label">
+                        Concordo com os <a href="{{ url_for('terms') }}" class="text-primary">Termos de Serviço</a> 
+                        e <a href="{{ url_for('privacy') }}" class="text-primary">Política de Privacidade</a>
+                    </label>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1 py-2">
+                    <i class="fas fa-check-circle me-2"></i>Criar Conta
+                </button>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-secondary py-2">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                </a>
+            </div>
+        </form>
+
+        <div class="alert alert-info m-3 text-center">
+            <i class="fas fa-envelope me-2"></i>
+            <strong>📩 Enviamos um email de confirmação para você.</strong><br>
+            <small>Só será possível fazer login após confirmar o email.</small>
+        </div>
+
+        <div class="text-center p-3 border-top">
+            <p class="mb-0">Já tem uma conta? <a href="{{ url_for('login') }}" class="fw-bold text-primary">Faça login aqui</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirm_password');
+        const strengthBar = document.getElementById('password-strength');
+        const matchText = document.getElementById('password-match');
+        
+        function checkPasswordStrength(pass) {
+            let strength = 0;
+            if (pass.length >= 8) strength += 25;
+            if (/[A-Z]/.test(pass)) strength += 25;
+            if (/[0-9]/.test(pass)) strength += 25;
+            if (/[^A-Za-z0-9]/.test(pass)) strength += 25;
+            
+            strengthBar.style.width = strength + '%';
+            
+            if (strength < 50) {
+                strengthBar.className = 'progress-bar bg-danger';
+            } else if (strength < 75) {
+                strengthBar.className = 'progress-bar bg-warning';
+            } else {
+                strengthBar.className = 'progress-bar bg-success';
+            }
+        }
+        
+        function validatePasswords() {
+            if (password.value && confirmPassword.value) {
+                if (password.value !== confirmPassword.value) {
+                    matchText.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>As senhas não coincidem</span>';
+                    confirmPassword.classList.add('is-invalid');
+                    confirmPassword.classList.remove('is-valid');
+                } else {
+                    matchText.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>As senhas coincidem</span>';
+                    confirmPassword.classList.remove('is-invalid');
+                    confirmPassword.classList.add('is-valid');
+                }
+            }
+        }
+        
+        password.addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+            validatePasswords();
+        });
+        
+        confirmPassword.addEventListener('input', validatePasswords);
+    });
+</script>
+{% endblock %}
