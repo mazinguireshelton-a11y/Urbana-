@@ -1569,24 +1569,24 @@ def setup_supabase():
 
 # ========== EXECUÇÃO ==========
 
-if __name__ == "__main__":
+
 # ========== EXECUÇÃO PARA PRODUÇÃO ==========
 
 if __name__ == "__main__":
     print("=" * 60)
     print("🚀 URBANA - Sistema de Planejamento Urbano")
     print("=" * 60)
-    
+
     if not os.getenv('SUPABASE_URL') or not os.getenv('SUPABASE_ANON_KEY'):
         print("❌ ERRO: Variáveis de ambiente não configuradas")
         print("Configure as variáveis no Render:")
         print("SUPABASE_URL, SUPABASE_ANON_KEY, SECRET_KEY")
         exit(1)
-    
+
     if setup_supabase():
         print("✅ Sistema pronto para uso")
         print("=" * 60)
-        
+
         # Para produção no Render
         port = int(os.environ.get('PORT', 5000))
         app.run(debug=False, host='0.0.0.0', port=port)
