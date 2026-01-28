@@ -1569,7 +1569,6 @@ def setup_supabase():
 
 # ========== EXECUÇÃO ==========
 
-
 # ========== EXECUÇÃO PARA PRODUÇÃO ==========
 
 if __name__ == "__main__":
