@@ -4,8 +4,8 @@ Werkzeug==2.3.8
 supabase==1.1.1
 python-dotenv==1.0.0
 reportlab==4.0.4
-matplotlib==3.7.2
+# matplotlib==3.7.2
 httpx==0.24.1
 gunicorn==21.2.0
-pandas==2.0.3
-numpy==1.24.3
+# pandas>=2.0.3
+# numpy<2.0.0
