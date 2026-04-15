@@ -317,17 +317,14 @@ def ensure_user_profile(user_id, email, name=None, organization=None):
 
 # ========== ROTAS DE AUTENTICAÇÃO ROBUSTAS ==========
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/")
 def login():
-    
     if LOGIN_DESATIVADO:
         guest = GuestUser()
         login_user(guest)
-        return redirect(url_for('dashboard'))
+        return redirect(url_for("dashboard"))
 
-    if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
-    
+    return render_template("index.html")
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
