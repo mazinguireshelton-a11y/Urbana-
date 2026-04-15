@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, jsonify, send_file, make_response, redirect, url_for, flash, session, g
 import secrets
 import base64
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+# ========== LOGIN COMENTADO TEMPORARIAMENTE ==========
+# from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+# ===================================================
 from werkzeug.security import generate_password_hash, check_password_hash
 from supabase import create_client, Client
 import json
@@ -24,8 +26,17 @@ import httpx
 import secrets
 import base64
 import hashlib
+<<<<<<< HEAD
 from flask_login import UserMixin
+=======
+# ========== LOGIN COMENTADO TEMPORARIAMENTE ==========
+# from flask_login import UserMixin
+# ===================================================
+>>>>>>> 4350bce (Update app.py)
 
+# ========== MODO DEMO - PULAR LOGIN ==========
+DEMO_MODE = True  # Mudar para False para reativar o login
+# ============================================
 
 LOGIN_DESATIVADO = True
 # ========== FUNÇÕES PKCE ==========
@@ -66,15 +77,35 @@ supabase_admin = None
 if SUPABASE_SERVICE_KEY:
     supabase_admin = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
-# ========== FLASK LOGIN ==========
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-login_manager.login_message = 'Por favor, faça login para acessar esta página.'
-login_manager.login_message_category = 'info'
-login_manager.remember_cookie_duration = timedelta(days=30)
+# ========== FLASK LOGIN (COMENTADO TEMPORARIAMENTE) ==========
+# ==============================================================
+# login_manager = LoginManager()
+# login_manager.init_app(app)
+# login_manager.login_view = 'login'
+# login_manager.login_message = 'Por favor, faça login para acessar esta página.'
+# login_manager.login_message_category = 'info'
+# login_manager.remember_cookie_duration = timedelta(days=30)
+# ==============================================================
 
+<<<<<<< HEAD
 # ========== MODELO DE USUÁRIO ROBUSTO ==========
+=======
+# ========== USUÁRIO DEMO PARA MODO SEM LOGIN ==========
+class DemoUser:
+    """Usuário temporário para modo demo"""
+    def __init__(self):
+        self.id = "demo_user"
+        self.email = "demo@urbana.app"
+        self.name = "Usuário Demo"
+        self.organization = "Modo de Demonstração"
+        self.is_authenticated = True
+        self.is_active = True
+    
+    def get_id(self):
+        return self.id
+
+# ========== MODELO DE USUÁRIO ROBUSTO (MANTIDO PARA QUANDO REATIVAR) ==========
+>>>>>>> 4350bce (Update app.py)
 class GuestUser(UserMixin):
     def __init__(self):
         self.id = "guest"
@@ -126,13 +157,15 @@ class User(UserMixin):
             print(f"⚠️ Erro ao buscar usuário {user_id}: {e}")
             return None
 
-@login_manager.user_loader
-def load_user(user_id):
-    """Carregar usuário para Flask-Login"""
-    user = User.get(user_id)
-    if user:
-        user.id = user_id
-    return user
+# ========== LOAD USER (COMENTADO TEMPORARIAMENTE) ==========
+# @login_manager.user_loader
+# def load_user(user_id):
+#     """Carregar usuário para Flask-Login"""
+#     user = User.get(user_id)
+#     if user:
+#         user.id = user_id
+#     return user
+# ============================================================
 
 # ========== CONTEXT PROCESSOR ==========
 @app.context_processor
@@ -179,8 +212,15 @@ def utility_processor():
             print(f"DEBUG: Erro ao formatar número: {e}")
             return str(value)
     
-    return dict(format_date=format_date, format_number=format_number)
-
+    # ========== MODO DEMO: retornar usuário demo ==========
+    if DEMO_MODE:
+        def current_user():
+            return DemoUser()
+        return dict(format_date=format_date, format_number=format_number, current_user=current_user)
+    # ========== MODO NORMAL: retornar usuário da sessão ==========
+    else:
+        return dict(format_date=format_date, format_number=format_number)
+    
 # ========== MIDDLEWARE ==========
 @app.before_request
 def before_request():
@@ -188,18 +228,27 @@ def before_request():
     try:
         g.supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
         
-        if 'access_token' in session:
-            access_token = session.get('access_token')
-            refresh_token = session.get('refresh_token')
+        # ========== MODO DEMO: pular autenticação ==========
+        if DEMO_MODE:
+            g.current_user = DemoUser()
+            return
             
-            if access_token:
-                try:
-                    g.supabase.auth.set_session(access_token, refresh_token)
-                except Exception as e:
-                    print(f"⚠️ Erro ao configurar sessão: {e}")
+        # ========== MODO NORMAL: restaurar quando DESCOMENTAR ==========
+        # if 'access_token' in session:
+        #     access_token = session.get('access_token')
+        #     refresh_token = session.get('refresh_token')
+        #     
+        #     if access_token:
+        #         try:
+        #             g.supabase.auth.set_session(access_token, refresh_token)
+        #         except Exception as e:
+        #             print(f"⚠️ Erro ao configurar sessão: {e}")
+        # ===============================================================
     except Exception as e:
         print(f"⚠️ Erro no before_request: {e}")
         g.supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+        if DEMO_MODE:
+            g.current_user = DemoUser()
 
 # ========== FUNÇÕES AUXILIARES ==========
 
@@ -315,8 +364,358 @@ def ensure_user_profile(user_id, email, name=None, organization=None):
         print(f"❌ ERRO em ensure_user_profile: {e}")
         return False
 
-# ========== ROTAS DE AUTENTICAÇÃO ROBUSTAS ==========
+# ========== ROTAS DE AUTENTICAÇÃO ROBUSTAS (COMENTADAS TEMPORARIAMENTE) ==========
+# ================================================================================
+# @app.route("/")
+# def login():
+#     if LOGIN_DESATIVADO:
+#         guest = GuestUser()
+#         login_user(guest)
+#         return redirect(url_for("dashboard"))
+# 
+#     return render_template("index.html")
+#     if request.method == "POST":
+#         email = request.form.get('email')
+#         password = request.form.get('password')
+#         remember = request.form.get('remember', True)
+#         
+#         if not email or not password:
+#             flash('Por favor, preencha todos os campos.', 'danger')
+#             return render_template("login.html")
+#         
+#         try:
+#             supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+#             
+#             auth_response = supabase.auth.sign_in_with_password({
+#                 "email": email,
+#                 "password": password
+#             })
+#             
+#             if auth_response.user:
+#                 user = auth_response.user
+#                 
+#                 session['access_token'] = auth_response.session.access_token
+#                 session['refresh_token'] = auth_response.session.refresh_token
+#                 session.permanent = True
+#                 
+#                 user_name = user.user_metadata.get('name') or email.split('@')[0].title()
+#                 user_org = user.user_metadata.get('organization', '')
+#                 
+#                 ensure_user_profile(user.id, user.email, user_name, user_org)
+#                 
+#                 user_obj = User.get(user.id)
+#                 if not user_obj:
+#                     user_obj = User({
+#                         'id': user.id,
+#                         'email': user.email,
+#                         'name': user_name,
+#                         'organization': user_org
+#                     })
+#                 
+#                 login_user(user_obj, remember=bool(remember))
+#                 
+#                 flash(f'Bem-vindo, {user_obj.name}!', 'success')
+#                 return redirect(url_for('dashboard'))
+#             
+#         except Exception as e:
+#             error_msg = str(e)
+#             print(f"🔍 Erro de login detalhado: {error_msg}")
+#             
+#             if "Invalid login credentials" in error_msg:
+#                 flash('Email ou senha incorretos.', 'danger')
+#             elif "Email not confirmed" in error_msg:
+#                 flash('Por favor, confirme seu email antes de fazer login.', 'warning')
+#                 flash('Use "Reenviar confirmação" se não recebeu o email.', 'info')
+#             elif "rate limit" in error_msg.lower():
+#                 flash('Muitas tentativas. Aguarde alguns minutos.', 'warning')
+#             else:
+#                 flash('Erro no login. Tente novamente.', 'danger')
+#     
+#     return render_template("login.html")
+# 
+# @app.route("/register", methods=["GET", "POST"])
+# def register():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('dashboard'))
+#     
+#     if request.method == "POST":
+#         email = request.form.get('email')
+#         password = request.form.get('password')
+#         confirm_password = request.form.get('confirm_password')
+#         name = request.form.get('name')
+#         organization = request.form.get('organization')
+#         
+#         if not all([email, password, confirm_password, name]):
+#             flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
+#         elif password != confirm_password:
+#             flash('As senhas não coincidem.', 'danger')
+#         elif len(password) < 8:
+#             flash('A senha deve ter pelo menos 8 caracteres.', 'danger')
+#         else:
+#             try:
+#                 supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+#                 
+#                 auth_response = supabase.auth.sign_up({
+#                     "email": email,
+#                     "password": password,
+#                     "options": {
+#                         "data": {
+#                             "name": name,
+#                             "organization": organization
+#                         }
+#                     }
+#                 })
+#                 
+#                 if auth_response.user:
+#                     ensure_user_profile(auth_response.user.id, email, name, organization)
+#                     
+#                     flash('✅ Conta criada com sucesso! Faça login.', 'success')
+#                     return redirect(url_for('login'))
+#                 else:
+#                     flash('Erro ao criar conta.', 'danger')
+# 
+#             except Exception as e:
+#                 error_msg = str(e)
+#                 print(f"🔍 Erro de registro detalhado: {error_msg}")
+#                 
+#                 if "already registered" in error_msg.lower():
+#                     flash('Este email já está registrado.', 'warning')
+#                 elif "password should be at least" in error_msg.lower():
+#                     flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
+#                 elif "invalid email" in error_msg.lower():
+#                     flash('Email inválido.', 'danger')
+#                 elif "rate limit" in error_msg.lower():
+#                     flash('Muitas tentativas. Aguarde alguns minutos.', 'warning')
+#                 else:
+#                     flash(f'Erro ao criar conta: {error_msg[:100]}', 'danger')
+#     
+#     return render_template("register.html")
+# 
+# @app.route("/auth/google")
+# def auth_google():
+#     """Login com Google - CORREÇÃO SIMPLIFICADA QUE FUNCIONA"""
+#     try:
+#         print("🔗 Iniciando autenticação Google...")
+#         
+#         callback_url = f"{request.host_url}auth/callback"
+#         print(f"📌 Callback URL: {callback_url}")
+#         
+#         supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+#         
+#         # Método SIMPLES que funciona
+#         response = supabase.auth.sign_in_with_oauth({
+#             "provider": "google",
+#             "options": {
+#                 "redirect_to": callback_url,
+#                 "query_params": {
+#                     "access_type": "offline",
+#                     "prompt": "select_account"
+#                 }
+#             }
+#         })
+#         
+#         if hasattr(response, 'url'):
+#             print(f"🔗 Redirecionando para: {response.url[:100]}...")
+#             return redirect(response.url)
+#         else:
+#             flash('Erro ao iniciar autenticação.', 'danger')
+#             return redirect(url_for('login'))
+#             
+#     except Exception as e:
+#         print(f"❌ Erro no Google OAuth: {e}")
+#         flash('Erro ao conectar com Google. Use login com email.', 'danger')
+#         return redirect(url_for('login'))
+# 
+# @app.route("/auth/callback")
+# def auth_callback():
+#     """Callback para Google OAuth - VERSÃO FUNCIONAL"""
+#     print("=" * 60)
+#     print("🔄 CALLBACK GOOGLE")
+#     print(f"📦 Code: {request.args.get('code')}")
+#     print(f"📦 Error: {request.args.get('error')}")
+#     print("=" * 60)
+#     
+#     code = request.args.get('code')
+#     error = request.args.get('error')
+#     
+#     if error:
+#         flash(f'Erro do Google: {error}', 'danger')
+#         return redirect(url_for('login'))
+#     
+#     if not code:
+#         flash('Código não recebido.', 'danger')
+#         return redirect(url_for('login'))
+#     
+#     try:
+#         # Método DIRETO: obter usuário da sessão atual
+#         supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+#         
+#         # Tentar obter o usuário atual (o Supabase deve ter configurado a sessão)
+#         user_response = supabase.auth.get_user()
+#         
+#         if not user_response or not user_response.user:
+#             # Se não conseguir, tentar com o código recebido
+#             print("⚠️ Nenhum usuário na sessão, tentando método alternativo...")
+#             
+#             # Método alternativo: trocar código por token
+#             token_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=pkce"
+#             
+#             headers = {
+#                 "apikey": SUPABASE_ANON_KEY,
+#                 "Content-Type": "application/x-www-form-urlencoded"
+#             }
+#             
+#             data = {
+#                 "code": code,
+#                 "grant_type": "authorization_code",
+#                 "redirect_uri": f"{request.host_url}auth/callback"
+#             }
+#             
+#             response = httpx.post(token_url, headers=headers, data=data, timeout=30.0)
+#             
+#             if response.status_code == 200:
+#                 token_data = response.json()
+#                 access_token = token_data.get("access_token")
+#                 
+#                 if access_token:
+#                     # Configurar sessão com o token
+#                     supabase.auth.set_session(access_token, token_data.get("refresh_token"))
+#                     user_response = supabase.auth.get_user()
+#                 else:
+#                     flash('Token não recebido.', 'danger')
+#                     return redirect(url_for('login'))
+#             else:
+#                 print(f"❌ Erro ao trocar código: {response.text}")
+#                 flash('Erro na autenticação. Use login com email.', 'danger')
+#                 return redirect(url_for('login'))
+#         
+#         if user_response and user_response.user:
+#             user = user_response.user
+#             email = user.email
+#             
+#             print(f"✅ USUÁRIO OBTIDO: {email}")
+#             
+#             # Garantir perfil
+#             name = (user.user_metadata.get("name") or 
+#                    user.user_metadata.get("full_name") or 
+#                    email.split("@")[0].title())
+#             
+#             ensure_user_profile(user.id, email, name, "Google")
+#             
+#             # Login no Flask-Login
+#             user_obj = User.get(user.id)
+#             if not user_obj:
+#                 user_obj = User({
+#                     "id": user.id,
+#                     "email": email,
+#                     "name": name,
+#                     "organization": "Google"
+#                 })
+#             
+#             login_user(user_obj, remember=True)
+#             
+#             # Salvar tokens na sessão
+#             session['access_token'] = supabase.auth.session.access_token if hasattr(supabase.auth, 'session') else None
+#             session['refresh_token'] = supabase.auth.session.refresh_token if hasattr(supabase.auth, 'session') else None
+#             session.permanent = True
+#             
+#             print(f"🎉 LOGIN BEM-SUCEDIDO: {name}")
+#             flash(f'Bem-vindo, {name}!', 'success')
+#             return redirect(url_for('dashboard'))
+#         else:
+#             flash('Não foi possível obter informações do usuário.', 'danger')
+#             return redirect(url_for('login'))
+#         
+#     except Exception as e:
+#         print(f"❌ Erro no callback: {e}")
+#         import traceback
+#         traceback.print_exc()
+#         
+#         # Fallback para login manual
+#         flash('Erro na autenticação com Google. Por favor, use login com email.', 'warning')
+#         return redirect(url_for('login'))
+# 
+# @app.route("/logout")
+# @login_required
+# def logout():
+#     try:
+#         if hasattr(g, 'supabase'):
+#             supabase = g.supabase
+#             supabase.auth.sign_out()
+#     except:
+#         pass
+#     
+#     session.pop('access_token', None)
+#     session.pop('refresh_token', None)
+#     logout_user()
+#     
+#     flash('Você saiu da sua conta.', 'info')
+#     return redirect(url_for('login'))
+# 
+# # ========== ROTAS DE RECUPERAÇÃO ==========
+# 
+# @app.route("/forgot-password", methods=["GET", "POST"])
+# def forgot_password():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('dashboard'))
+#     
+#     if request.method == "POST":
+#         email = request.form.get('email')
+#         
+#         if not email:
+#             flash('Por favor, informe seu email.', 'danger')
+#         else:
+#             try:
+#                 supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+#                 supabase.auth.reset_password_email(email)
+#                 
+#                 flash(f'📩 Enviamos um email para {email} com instruções para redefinir sua senha.', 'success')
+#                 return redirect(url_for('login'))
+#                 
+#             except Exception as e:
+#                 error_msg = str(e)
+#                 if "not found" in error_msg.lower():
+#                     flash('Este email não está cadastrado no sistema.', 'warning')
+#                 else:
+#                     flash(f'Erro ao enviar email de recuperação.', 'danger')
+#     
+#     return render_template("forgot_password.html")
+# 
+# @app.route("/resend-confirmation", methods=["GET", "POST"])
+# def resend_confirmation():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('dashboard'))
+#     
+#     if request.method == "POST":
+#         email = request.form.get('email')
+#         
+#         if not email:
+#             flash('Por favor, informe seu email.', 'danger')
+#         else:
+#             try:
+#                 supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+#                 supabase.auth.resend({
+#                     "type": "signup",
+#                     "email": email
+#                 })
+#                 
+#                 flash(f'📩 Enviamos novamente o email de confirmação para {email}. Verifique sua caixa de entrada.', 'success')
+#                 return redirect(url_for('login'))
+#                 
+#             except Exception as e:
+#                 error_msg = str(e)
+#                 if "already confirmed" in error_msg.lower():
+#                     flash('Este email já foi confirmado. Faça login normalmente.', 'info')
+#                     return redirect(url_for('login'))
+#                 elif "not found" in error_msg.lower():
+#                     flash('Este email não está cadastrado no sistema.', 'warning')
+#                 else:
+#                     flash(f'Erro ao reenviar confirmação.', 'danger')
+#     
+#     return render_template("resend_confirmation.html")
+# ================================================================================
 
+<<<<<<< HEAD
 @app.route("/")
 def login():
     if LOGIN_DESATIVADO:
@@ -666,12 +1065,20 @@ def resend_confirmation():
     return render_template("resend_confirmation.html")
 
 # ========== ROTAS BÁSICAS ==========
+=======
+# ========== ROTAS PRINCIPAIS (MODO DEMO) ==========
+>>>>>>> 4350bce (Update app.py)
 
 @app.route("/")
 def index():
-    if current_user.is_authenticated:
-        return redirect(url_for('simulate_form'))
-    return render_template("login.html")
+    """Página inicial - modo demo pula login"""
+    if DEMO_MODE:
+        return redirect(url_for('dashboard'))
+    else:
+        # Quando reativar, descomentar as linhas abaixo
+        # if current_user.is_authenticated:
+        #     return redirect(url_for('simulate_form'))
+        return render_template("login.html")
 
 @app.route("/terms")
 def terms():
@@ -684,18 +1091,18 @@ def privacy():
 # ========== DASHBOARD COMPLETO ==========
 
 @app.route("/dashboard")
-@login_required
 def dashboard():
+    """Dashboard - acesso liberado no modo demo"""
     try:
         if hasattr(g, 'supabase'):
             supabase = g.supabase
         else:
             supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
         
+        # ========== MODO DEMO: buscar todas simulações sem filtro de usuário ==========
         try:
             response = supabase.table('simulations')\
                 .select('*')\
-                .eq('user_id', current_user.id)\
                 .order('created_at', desc=True)\
                 .execute()
             
@@ -836,12 +1243,10 @@ def dashboard():
 # ========== ROTAS DE SIMULAÇÃO ==========
 
 @app.route("/simulate", methods=["GET"])
-@login_required
 def simulate_form():
     return render_template("index.html")
 
 @app.route("/calculate", methods=["POST"])
-@login_required
 def calculate():
     try:
         if hasattr(g, 'supabase'):
@@ -864,8 +1269,11 @@ def calculate():
         water_per_capita = water_per_person
         energy_per_capita = energy_per_person
 
+        # ========== MODO DEMO: usar usuário demo ==========
+        user_id = g.current_user.id if DEMO_MODE else current_user.id
+        
         simulation_data = {
-            'user_id': current_user.id,
+            'user_id': user_id,
             'area_name': area_name,
             'population': population,
             'area_size': area_size,
@@ -894,7 +1302,6 @@ def calculate():
         return redirect(url_for('simulate_form'))
 
 @app.route("/report/<int:sim_id>")
-@login_required
 def view_report(sim_id):
     try:
         if hasattr(g, 'supabase'):
@@ -902,14 +1309,14 @@ def view_report(sim_id):
         else:
             supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
             
+        # ========== MODO DEMO: buscar sem filtro de usuário ==========
         response = supabase.table('simulations')\
             .select('*')\
             .eq('id', sim_id)\
-            .eq('user_id', current_user.id)\
             .execute()
         
         if not response.data:
-            flash('Simulação não encontrada ou acesso negado.', 'danger')
+            flash('Simulação não encontrada.', 'danger')
             return redirect(url_for('dashboard'))
         
         simulation = response.data[0]
@@ -937,7 +1344,6 @@ def view_report(sim_id):
 # ========== ROTAS DE VISUALIZAÇÃO ==========
 
 @app.route("/my-simulations")
-@login_required
 def my_simulations():
     try:
         if hasattr(g, 'supabase'):
@@ -945,9 +1351,9 @@ def my_simulations():
         else:
             supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
             
+        # ========== MODO DEMO: buscar todas simulações ==========
         response = supabase.table('simulations')\
             .select('*')\
-            .eq('user_id', current_user.id)\
             .order('created_at', desc=True)\
             .execute()
         
@@ -962,7 +1368,6 @@ def my_simulations():
 # ========== ROTAS DE API ==========
 
 @app.route("/api/simulation/<int:sim_id>")
-@login_required
 def get_simulation_detail(sim_id):
     try:
         if hasattr(g, 'supabase'):
@@ -973,7 +1378,6 @@ def get_simulation_detail(sim_id):
         response = supabase.table('simulations')\
             .select('*')\
             .eq('id', sim_id)\
-            .eq('user_id', current_user.id)\
             .execute()
         
         if not response.data:
@@ -1000,7 +1404,6 @@ def get_simulation_detail(sim_id):
         return jsonify({"error": str(e)}), 500
 
 @app.route("/delete/<int:sim_id>", methods=["DELETE"])
-@login_required
 def delete_simulation(sim_id):
     try:
         if hasattr(g, 'supabase'):
@@ -1008,15 +1411,6 @@ def delete_simulation(sim_id):
         else:
             supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
             
-        check_response = supabase.table('simulations')\
-            .select('id')\
-            .eq('id', sim_id)\
-            .eq('user_id', current_user.id)\
-            .execute()
-        
-        if not check_response.data:
-            return jsonify({"error": "Acesso negado"}), 403
-        
         delete_response = supabase.table('simulations')\
             .delete()\
             .eq('id', sim_id)\
@@ -1031,9 +1425,8 @@ def delete_simulation(sim_id):
 # ========== ROTAS DE EXPORTAÇÃO ==========
 
 @app.route("/export/csv")
-@login_required
 def export_csv():
-    """Exportar simulações do usuário como CSV"""
+    """Exportar simulações como CSV"""
     try:
         if hasattr(g, 'supabase'):
             supabase = g.supabase
@@ -1042,7 +1435,6 @@ def export_csv():
             
         response = supabase.table('simulations')\
             .select('*')\
-            .eq('user_id', current_user.id)\
             .order('created_at', desc=True)\
             .execute()
         
@@ -1080,7 +1472,7 @@ def export_csv():
         output.seek(0)
         response = make_response(output.getvalue())
         response.headers['Content-Disposition'] = \
-            f'attachment; filename=urbana_simulacoes_{current_user.id}_{datetime.now().strftime("%Y%m%d_%H%M")}.csv'
+            f'attachment; filename=urbana_simulacoes_{datetime.now().strftime("%Y%m%d_%H%M")}.csv'
         response.headers['Content-Type'] = 'text/csv; charset=utf-8'
         
         return response
@@ -1091,7 +1483,6 @@ def export_csv():
         return redirect(url_for('dashboard'))
 
 @app.route("/export/csv/<int:sim_id>")
-@login_required
 def export_csv_single(sim_id):
     """Exportar uma simulação específica como CSV"""
     try:
@@ -1103,7 +1494,6 @@ def export_csv_single(sim_id):
         response = supabase.table('simulations')\
             .select('*')\
             .eq('id', sim_id)\
-            .eq('user_id', current_user.id)\
             .execute()
         
         if not response.data:
@@ -1148,7 +1538,6 @@ def export_csv_single(sim_id):
         return redirect(url_for('view_report', sim_id=sim_id))
 
 @app.route("/export/pdf/<int:sim_id>")
-@login_required
 def export_pdf(sim_id):
     """Exportar relatório de simulação como PDF"""
     try:
@@ -1160,7 +1549,6 @@ def export_pdf(sim_id):
         response = supabase.table('simulations')\
             .select('*')\
             .eq('id', sim_id)\
-            .eq('user_id', current_user.id)\
             .execute()
         
         if not response.data:
@@ -1297,8 +1685,13 @@ def export_pdf(sim_id):
         
         story.append(Spacer(1, 20))
         
+        # ========== MODO DEMO: nome diferente ==========
+        user_name = "Sistema URBANA (Modo Demo)" if DEMO_MODE else current_user.name
+        user_org = "Demonstração" if DEMO_MODE else (current_user.organization or 'N/A')
+        
         footer_text = f"""
-        <i>Relatório gerado por: {current_user.name} ({current_user.organization or 'N/A'})<br/>
+        <i>Relatório gerado por: {user_name}<br/>
+        Organização: {user_org}<br/>
         Data de geração: {datetime.now().strftime('%d/%m/%Y %H:%M')}<br/>
         Sistema URBANA - Planejamento Urbano Inteligente</i>
         """
@@ -1320,9 +1713,8 @@ def export_pdf(sim_id):
         return redirect(url_for('view_report', sim_id=sim_id))
 
 @app.route("/export/pdf")
-@login_required
 def export_all_pdf():
-    """Exportar todas as simulações do usuário como PDF"""
+    """Exportar todas as simulações como PDF"""
     try:
         if hasattr(g, 'supabase'):
             supabase = g.supabase
@@ -1331,7 +1723,6 @@ def export_all_pdf():
             
         response = supabase.table('simulations')\
             .select('*')\
-            .eq('user_id', current_user.id)\
             .order('created_at', desc=True)\
             .execute()
         
@@ -1365,7 +1756,7 @@ def export_all_pdf():
         story = []
         
         story.append(Paragraph("Relatório Consolidado de Simulações URBANA", title_style))
-        story.append(Paragraph(f"Usuário: {current_user.name} • Data: {datetime.now().strftime('%d/%m/%Y')}", styles['Normal']))
+        story.append(Paragraph(f"Usuário: {'Sistema URBANA (Modo Demo)' if DEMO_MODE else current_user.name} • Data: {datetime.now().strftime('%d/%m/%Y')}", styles['Normal']))
         story.append(Spacer(1, 20))
         
         total_pop = sum(s.get('population', 0) for s in simulations)
@@ -1425,7 +1816,7 @@ def export_all_pdf():
         story.append(sims_table)
         
         story.append(Spacer(1, 30))
-        footer = Paragraph(f"<i>Relatório consolidado gerado por {current_user.name} • Sistema URBANA</i>", styles['Italic'])
+        footer = Paragraph(f"<i>Relatório consolidado gerado por {'Sistema URBANA (Modo Demo)' if DEMO_MODE else current_user.name} • Sistema URBANA</i>", styles['Italic'])
         story.append(footer)
         
         doc.build(story)
@@ -1434,7 +1825,7 @@ def export_all_pdf():
         response = make_response(buffer.getvalue())
         response.headers['Content-Type'] = 'application/pdf'
         response.headers['Content-Disposition'] = \
-            f'inline; filename=urbana_consolidado_{current_user.id}_{datetime.now().strftime("%Y%m%d")}.pdf'
+            f'inline; filename=urbana_consolidado_{datetime.now().strftime("%Y%m%d")}.pdf'
         
         return response
         
@@ -1443,78 +1834,113 @@ def export_all_pdf():
         flash(f'Erro ao gerar PDF: {str(e)[:100]}', 'danger')
         return redirect(url_for('my_simulations'))
 
-# ========== ROTAS DE PERFIL ==========
+# ========== ROTAS DE PERFIL (OPCIONAL NO MODO DEMO) ==========
 
 @app.route("/profile")
-@login_required
 def profile():
-    try:
-        if hasattr(g, 'supabase'):
-            supabase = g.supabase
-        else:
-            supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-            
-        email_confirmed = False
+    """Perfil - versão simplificada para modo demo"""
+    if DEMO_MODE:
+        # Versão demo do perfil
+        user_stats = {
+            'total_simulations': 0,
+            'account_age': 0,
+            'last_simulation': None,
+            'user_data': {
+                'email': 'demo@urbana.app',
+                'name': 'Usuário Demo',
+                'organization': 'Modo de Demonstração'
+            }
+        }
+        
+        # Tenta contar simulações reais
         try:
-            auth_user = supabase.auth.get_user()
-            if auth_user and auth_user.user:
-                email_confirmed = auth_user.user.email_confirmed_at is not None
-        except Exception as auth_error:
-            print(f"⚠️ Erro ao obter dados de autenticação: {auth_error}")
+            if hasattr(g, 'supabase'):
+                supabase = g.supabase
+            else:
+                supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+                
+            response = supabase.table('simulations')\
+                .select('id', count='exact')\
+                .execute()
+            
+            user_stats['total_simulations'] = len(response.data) if response.data else 0
+        except:
+            pass
         
-        user_response = supabase.table('users')\
-            .select('*')\
-            .eq('id', current_user.id)\
-            .execute()
-        
-        user_data = user_response.data[0] if user_response.data else {}
-        user_data['email_confirmed'] = email_confirmed
-        
-        sim_response = supabase.table('simulations')\
-            .select('id, area_name, population, total_water, total_energy, created_at')\
-            .eq('user_id', current_user.id)\
-            .order('created_at', desc=True)\
-            .limit(1)\
-            .execute()
-        
-        simulations = sim_response.data
-        
-        created_at = None
-        if user_data and 'created_at' in user_data and user_data['created_at']:
+        return render_template("profile.html", user_stats=user_stats)
+    else:
+        # Versão normal quando reativar
+        try:
+            if hasattr(g, 'supabase'):
+                supabase = g.supabase
+            else:
+                supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+                
+            email_confirmed = False
             try:
-                created_at = datetime.fromisoformat(user_data['created_at'].replace('Z', '+00:00'))
-                account_age_days = (datetime.now(timezone.utc) - created_at).days
-            except Exception as e:
-                print(f"⚠️ Erro ao converter data do usuário: {e}")
+                auth_user = supabase.auth.get_user()
+                if auth_user and auth_user.user:
+                    email_confirmed = auth_user.user.email_confirmed_at is not None
+            except Exception as auth_error:
+                print(f"⚠️ Erro ao obter dados de autenticação: {auth_error}")
+            
+            user_response = supabase.table('users')\
+                .select('*')\
+                .eq('id', current_user.id)\
+                .execute()
+            
+            user_data = user_response.data[0] if user_response.data else {}
+            user_data['email_confirmed'] = email_confirmed
+            
+            sim_response = supabase.table('simulations')\
+                .select('id, area_name, population, total_water, total_energy, created_at')\
+                .eq('user_id', current_user.id)\
+                .order('created_at', desc=True)\
+                .limit(1)\
+                .execute()
+            
+            simulations = sim_response.data
+            
+            created_at = None
+            if user_data and 'created_at' in user_data and user_data['created_at']:
+                try:
+                    created_at = datetime.fromisoformat(user_data['created_at'].replace('Z', '+00:00'))
+                    account_age_days = (datetime.now(timezone.utc) - created_at).days
+                except Exception as e:
+                    print(f"⚠️ Erro ao converter data do usuário: {e}")
+                    created_at = datetime.now(timezone.utc)
+                    account_age_days = 0
+            else:
                 created_at = datetime.now(timezone.utc)
                 account_age_days = 0
-        else:
-            created_at = datetime.now(timezone.utc)
-            account_age_days = 0
-        
-        total_sim_response = supabase.table('simulations')\
-            .select('id', count='exact')\
-            .eq('user_id', current_user.id)\
-            .execute()
-        
-        total_simulations = total_sim_response.count if hasattr(total_sim_response, 'count') else len(simulations)
-        
-        user_stats = {
-            'total_simulations': total_simulations,
-            'account_age': account_age_days,
-            'last_simulation': simulations[0] if simulations else None,
-            'user_data': user_data
-        }
-        return render_template("profile.html", user_stats=user_stats)
-        
-    except Exception as e:
-        print(f"⚠️ Erro no perfil: {e}")
-        flash('Erro ao carregar perfil.', 'danger')
-        return redirect(url_for('dashboard'))
+            
+            total_sim_response = supabase.table('simulations')\
+                .select('id', count='exact')\
+                .eq('user_id', current_user.id)\
+                .execute()
+            
+            total_simulations = total_sim_response.count if hasattr(total_sim_response, 'count') else len(simulations)
+            
+            user_stats = {
+                'total_simulations': total_simulations,
+                'account_age': account_age_days,
+                'last_simulation': simulations[0] if simulations else None,
+                'user_data': user_data
+            }
+            return render_template("profile.html", user_stats=user_stats)
+            
+        except Exception as e:
+            print(f"⚠️ Erro no perfil: {e}")
+            flash('Erro ao carregar perfil.', 'danger')
+            return redirect(url_for('dashboard'))
 
 @app.route("/profile/edit", methods=["GET", "POST"])
-@login_required
 def edit_profile():
+    """Editar perfil - apenas quando login estiver ativo"""
+    if DEMO_MODE:
+        flash('Edição de perfil desativada no modo demo.', 'info')
+        return redirect(url_for('profile'))
+    
     if request.method == "POST":
         try:
             if hasattr(g, 'supabase'):
@@ -1585,11 +2011,10 @@ def setup_supabase():
 
 # ========== EXECUÇÃO ==========
 
-# ========== EXECUÇÃO PARA PRODUÇÃO ==========
-
 if __name__ == "__main__":
     print("=" * 60)
     print("🚀 URBANA - Sistema de Planejamento Urbano")
+    print(f"📌 MODO: {'DEMO (Login desativado)' if DEMO_MODE else 'NORMAL (Login ativado)'}")
     print("=" * 60)
 
     if not os.getenv('SUPABASE_URL') or not os.getenv('SUPABASE_ANON_KEY'):
@@ -1600,6 +2025,10 @@ if __name__ == "__main__":
 
     if setup_supabase():
         print("✅ Sistema pronto para uso")
+        if DEMO_MODE:
+            print("📍 Modo DEMO ativo - Acesse diretamente: /dashboard")
+        else:
+            print("📍 Modo NORMAL - Login necessário")
         print("=" * 60)
 
         # Para produção no Render
