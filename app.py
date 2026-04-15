@@ -24,8 +24,10 @@ import httpx
 import secrets
 import base64
 import hashlib
+from flask_login import UserMixin
 
 
+LOGIN_DESATIVADO = True
 # ========== FUNÇÕES PKCE ==========
 def generate_pkce_pair():
     """Gerar code_verifier e code_challenge para PKCE"""
@@ -73,6 +75,17 @@ login_manager.login_message_category = 'info'
 login_manager.remember_cookie_duration = timedelta(days=30)
 
 # ========== MODELO DE USUÁRIO ROBUSTO ==========
+class GuestUser(UserMixin):
+    def __init__(self):
+        self.id = "guest"
+        self.email = "guest@urbana.app"
+        self.name = "Visitante"
+        self.organization = "Modo Público"
+
+    @property
+    def is_authenticated(self):
+        return True
+        
 class User(UserMixin):
     def __init__(self, user_data):
         if isinstance(user_data, dict):
@@ -306,6 +319,12 @@ def ensure_user_profile(user_id, email, name=None, organization=None):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    
+    if LOGIN_DESATIVADO:
+        guest = GuestUser()
+        login_user(guest)
+        return redirect(url_for('dashboard'))
+
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
