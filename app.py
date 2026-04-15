@@ -28,11 +28,9 @@ import base64
 import hashlib
 <<<<<<< HEAD
 from flask_login import UserMixin
-=======
 # ========== LOGIN COMENTADO TEMPORARIAMENTE ==========
 # from flask_login import UserMixin
 # ===================================================
->>>>>>> 4350bce (Update app.py)
 
 # ========== MODO DEMO - PULAR LOGIN ==========
 DEMO_MODE = True  # Mudar para False para reativar o login
@@ -87,9 +85,7 @@ if SUPABASE_SERVICE_KEY:
 # login_manager.remember_cookie_duration = timedelta(days=30)
 # ==============================================================
 
-<<<<<<< HEAD
 # ========== MODELO DE USUÁRIO ROBUSTO ==========
-=======
 # ========== USUÁRIO DEMO PARA MODO SEM LOGIN ==========
 class DemoUser:
     """Usuário temporário para modo demo"""
@@ -105,7 +101,6 @@ class DemoUser:
         return self.id
 
 # ========== MODELO DE USUÁRIO ROBUSTO (MANTIDO PARA QUANDO REATIVAR) ==========
->>>>>>> 4350bce (Update app.py)
 class GuestUser(UserMixin):
     def __init__(self):
         self.id = "guest"
@@ -715,7 +710,6 @@ def ensure_user_profile(user_id, email, name=None, organization=None):
 #     return render_template("resend_confirmation.html")
 # ================================================================================
 
-<<<<<<< HEAD
 @app.route("/")
 def login():
     if LOGIN_DESATIVADO:
@@ -1065,9 +1059,7 @@ def resend_confirmation():
     return render_template("resend_confirmation.html")
 
 # ========== ROTAS BÁSICAS ==========
-=======
 # ========== ROTAS PRINCIPAIS (MODO DEMO) ==========
->>>>>>> 4350bce (Update app.py)
 
 @app.route("/")
 def index():
