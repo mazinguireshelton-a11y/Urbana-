@@ -26,16 +26,13 @@ import httpx
 import secrets
 import base64
 import hashlib
-<<<<<<< HEAD
 from flask_login import UserMixin
 # ========== LOGIN COMENTADO TEMPORARIAMENTE ==========
 # from flask_login import UserMixin
 # ===================================================
-
 # ========== MODO DEMO - PULAR LOGIN ==========
 DEMO_MODE = True  # Mudar para False para reativar o login
 # ============================================
-
 LOGIN_DESATIVADO = True
 # ========== FUNÇÕES PKCE ==========
 def generate_pkce_pair():
