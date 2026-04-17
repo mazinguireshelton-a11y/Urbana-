@@ -192,6 +192,7 @@ def dashboard():
             avg_energy = 0
             avg_area = 0
         
+        # ESTRUTURA COMPLETA do stats (com TODOS os campos que o template espera)
         stats = {
             'total_simulations': len(processed_simulations),
             'total_population': total_population,
@@ -288,6 +289,33 @@ def dashboard():
             tipo_counts=json.dumps(tipo_counts),
             tipo_water=json.dumps(tipo_water),
             tipo_energy=json.dumps(tipo_energy)
+        )
+        
+    except Exception as e:
+        print(f"❌ Erro no dashboard: {e}")
+        # CRIA um stats COMPLETO mesmo em caso de erro
+        error_stats = {
+            'total_simulations': 0,
+            'total_population': 0,
+            'avg_water': 0,
+            'avg_energy': 0,
+            'avg_area': 0
+        }
+        return render_template(
+            "dashboard.html", 
+            simulations=[], 
+            stats=error_stats,
+            areas=json.dumps([]),
+            water_values=json.dumps([]),
+            energy_values=json.dumps([]),
+            dates=json.dumps([]),
+            sim_counts=json.dumps([]),
+            trend_water=json.dumps([]),
+            trend_energy=json.dumps([]),
+            tipo_labels=json.dumps([]),
+            tipo_counts=json.dumps([]),
+            tipo_water=json.dumps([]),
+            tipo_energy=json.dumps([])
         )
         
     except Exception as e:
