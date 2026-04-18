@@ -28,55 +28,40 @@
             <ul class="nav-links">
                 <li><a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">🏠 Início</a></li>
                 <li><a href="/dashboard" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">📊 Dashboard</a></li>
+                <li><a href="/simulate" class="nav-link">➕ Nova Simulação</a></li>
                 <li><a href="/my-simulations" class="nav-link {% if request.endpoint == 'my_simulations' %}active{% endif %}">📋 Simulações</a></li>
                 <li><a href="/profile" class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}">👤 Perfil</a></li>
             </ul>
             
             <div class="nav-user">
-                {% if current_user.is_authenticated %}
-                    <div class="user-info">
-                        <!-- Seletor de Idioma -->
-                        <div class="language-toggle">
-                            <button onclick="changeLanguage('pt')" class="lang-btn" title="Português">
-                                🇧🇷 PT
-                            </button>
-                            <button onclick="changeLanguage('en')" class="lang-btn" title="English">
-                                🇺🇸 EN
-                            </button>
-                        </div>
-                        
-                        <!-- Seletor de Tema -->
-                        <div class="theme-toggle">
-                            <button class="theme-btn light-btn" onclick="setTheme('light')" title="Tema Claro">
-                                ☀️
-                            </button>
-                            <button class="theme-btn dark-btn" onclick="setTheme('dark')" title="Tema Escuro">
-                                🌙
-                            </button>
-                            <button class="theme-btn auto-btn" onclick="setTheme('auto')" title="Auto (Sistema)">
-                                🔄
-                            </button>
-                        </div>
-                        
-                        <span class="user-name">{{ current_user.name.split()[0] }}</span>
-                        <a href="/logout" class="btn btn-sm btn-outline">Sair</a>
+                <!-- MODO DEMO - Sempre mostra o usuário demo -->
+                <div class="user-info">
+                    <!-- Seletor de Idioma -->
+                    <div class="language-toggle">
+                        <button onclick="changeLanguage('pt')" class="lang-btn" title="Português">
+                            🇧🇷 PT
+                        </button>
+                        <button onclick="changeLanguage('en')" class="lang-btn" title="English">
+                            🇺🇸 EN
+                        </button>
                     </div>
-                {% else %}
-                    <div class="auth-links">
-                        <!-- Seletor de Idioma -->
-                        <div class="language-toggle">
-                            <button onclick="changeLanguage('pt')" class="lang-btn" title="Português">
-                                🇧🇷 PT
-                            </button>
-                            <button onclick="changeLanguage('en')" class="lang-btn" title="English">
-                                🇺🇸 EN
-                            </button>
-                        </div>
-                        
-                        <a href="/login" class="btn btn-sm btn-outline">Entrar</a>
-                        <a href="/register" class="btn btn-sm btn-primary">Cadastrar</a>
+                    
+                    <!-- Seletor de Tema -->
+                    <div class="theme-toggle">
+                        <button class="theme-btn light-btn" onclick="setTheme('light')" title="Tema Claro">
+                            ☀️
+                        </button>
+                        <button class="theme-btn dark-btn" onclick="setTheme('dark')" title="Tema Escuro">
+                            🌙
+                        </button>
+                        <button class="theme-btn auto-btn" onclick="setTheme('auto')" title="Auto (Sistema)">
+                            🔄
+                        </button>
                     </div>
-                {% endif %}
+                    
+                    <span class="user-name">{{ current_user.name.split()[0] if current_user else 'Demo' }}</span>
+                    <span class="badge bg-info">Modo Demo</span>
+                </div>
             </div>
         </div>
     </nav>
