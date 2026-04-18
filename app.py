@@ -66,28 +66,37 @@ CURRENT_USER = DemoUser()
 @app.context_processor
 def utility_processor():
     def format_date(date_value, format_str='%d/%m/%Y'):
-        if date_value is None:
+        if not date_value:
             return "N/A"
-        
         try:
             if isinstance(date_value, str):
-                if not date_value or date_value.strip() == "":
-                    return "N/A"
-                if 'Z' in date_value:
-                    date_value = date_value.replace('Z', '+00:00')
-                if '.' in date_value and '+' in date_value:
-                    date_value = date_value.split('.')[0] + '+' + date_value.split('+')[1]
+                date_value = date_value.replace('Z', '+00:00')
                 date_obj = datetime.fromisoformat(date_value)
-                return date_obj.strftime(format_str)
-            
             elif isinstance(date_value, datetime):
-                return date_value.strftime(format_str)
+                date_obj = date_value
             else:
                 return str(date_value)
-                
-        except Exception as e:
-            print(f"DEBUG: Erro ao formatar data: {e}")
+            return date_obj.strftime(format_str)
+        except:
             return "N/A"
+    
+    def format_number(value, decimals=0):
+        if value is None:
+            return "N/A"
+        try:
+            num = float(str(value).replace(',', '.'))
+            if decimals == 0:
+                return f"{int(num):,}".replace(",", ".")
+            return f"{num:,.{decimals}f}".replace(",", ".")
+        except:
+            return str(value)
+    
+    # ✅ IMPORTANTE: Retorna o objeto, não uma função
+    return {
+        'format_date': format_date,
+        'format_number': format_number,
+        'current_user': CURRENT_USER  # ← Sem lambda, sem função
+    }
     
     def format_number(value, decimals=0):
         if value is None:
