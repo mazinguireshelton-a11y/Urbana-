@@ -206,7 +206,7 @@ def create_comparison_chart(areas, water_values, energy_values):
 @app.route("/")
 def index():
     """Página inicial - redireciona para dashboard sem login"""
-    return redirect(url_for('base'))
+    return redirect(url_for('dasboard'))
 
 @app.route("/login")
 def login():
