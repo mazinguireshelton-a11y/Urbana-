@@ -413,7 +413,7 @@ def auth_google():
 
 @app.route("/auth/callback")
 def auth_callback():
-    """Callback para Google OAuth - Versão Corrigida"""
+    """Callback para Google OAuth - Versão Corrigida COM API CORRETA"""
     print("=" * 60)
     print("🔄 CALLBACK GOOGLE")
     print(f"📦 Code: {request.args.get('code')}")
@@ -438,20 +438,29 @@ def auth_callback():
             flash('Erro de autenticação. Tente novamente.', 'danger')
             return redirect(url_for('login'))
         
-        token_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=authorization_code"
+        # 🔧 CORREÇÃO AQUI - URL CORRETA DO TOKEN
+        token_url = f"{SUPABASE_URL}/auth/v1/token"
         
         headers = {
             "apikey": SUPABASE_ANON_KEY,
-            "Content-Type": "application/x-www-form-urlencoded"
+            "Content-Type": "application/json"
         }
         
+        # 🔧 CORREÇÃO AQUI - BODY CORRETO (JSON, não form-data)
         data = {
-             "code": code,
-             "grant_type": "authorization_code",
-             "redirect_uri": f"{BASE_URL}/auth/callback",
-             "code_verifier": code_verifier
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": f"{request.host_url}auth/callback",
+            "code_verifier": code_verifier
         }
-        response = httpx.post(token_url, headers=headers, data=data, timeout=30.0)
+        
+        print(f"📡 Enviando requisição para: {token_url}")
+        print(f"📦 Dados: grant_type=authorization_code, code_verifier={code_verifier[:20]}...")
+        
+        response = httpx.post(token_url, headers=headers, json=data, timeout=30.0)
+        
+        print(f"📡 Status code: {response.status_code}")
+        print(f"📡 Resposta: {response.text[:200]}")
         
         if response.status_code == 200:
             token_data = response.json()
@@ -517,7 +526,7 @@ def auth_callback():
         traceback.print_exc()
         flash('Erro na autenticação com Google. Use login com email.', 'danger')
         return redirect(url_for('login'))
-
+        
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
