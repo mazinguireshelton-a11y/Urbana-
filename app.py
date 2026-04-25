@@ -351,23 +351,156 @@ def login():
                 
                 flash(f'Bem-vindo, {user_obj.name}!', 'success')
                 return redirect(url_for('dashboard'))
+                
+@app.route("/auth/google")
+def auth_google():
+    """Login com Google - Versão Corrigida"""
+    try:
+        print("🔗 Iniciando autenticação Google...")
+        
+        # Gerar PKCE pair
+        code_verifier, code_challenge = generate_pkce_pair()
+        
+        # Armazenar na sessão para usar no callback
+        session['code_verifier'] = code_verifier
+        
+        callback_url = f"{request.host_url}auth/callback"
+        print(f"📌 Callback URL: {callback_url}")
+        
+        # Construir URL de autorização manualmente
+        auth_url = (
+            f"{SUPABASE_URL}/auth/v1/authorize?"
+            f"provider=google&"
+            f"redirect_to={callback_url}&"
+            f"code_challenge={code_challenge}&"
+            f"code_challenge_method=S256"
+        )
+        
+        print(f"🔗 Redirect para: {auth_url[:100]}...")
+        return redirect(auth_url)
             
-        except Exception as e:
-            error_msg = str(e)
-            print(f"🔍 Erro de login detalhado: {error_msg}")
-            
-            if "Invalid login credentials" in error_msg:
-                flash('Email ou senha incorretos.', 'danger')
-            elif "Email not confirmed" in error_msg:
-                flash('Por favor, confirme seu email antes de fazer login.', 'warning')
-                flash('Use "Reenviar confirmação" se não recebeu o email.', 'info')
-            elif "rate limit" in error_msg.lower():
-                flash('Muitas tentativas. Aguarde alguns minutos.', 'warning')
-            else:
-                flash('Erro no login. Tente novamente.', 'danger')
-    
-    return render_template("login.html")
+    except Exception as e:
+        print(f"❌ Erro no Google OAuth: {e}")
+        flash('Erro ao conectar com Google. Use login com email.', 'danger')
+        return redirect(url_for('login'))
 
+@app.route("/auth/callback")
+def auth_callback():
+    """Callback para Google OAuth - Versão Corrigida"""
+    print("=" * 60)
+    print("🔄 CALLBACK GOOGLE")
+    print(f"📦 Code: {request.args.get('code')}")
+    print(f"📦 Error: {request.args.get('error')}")
+    print("=" * 60)
+    
+    code = request.args.get('code')
+    error = request.args.get('error')
+    
+    if error:
+        flash(f'Erro do Google: {error}', 'danger')
+        return redirect(url_for('login'))
+    
+    if not code:
+        flash('Código não recebido.', 'danger')
+        return redirect(url_for('login'))
+    
+    try:
+        # Obter code_verifier da sessão
+        code_verifier = session.get('code_verifier')
+        
+        if not code_verifier:
+            flash('Erro de autenticação. Tente novamente.', 'danger')
+            return redirect(url_for('login'))
+        
+        # Trocar código por token
+        token_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=authorization_code"
+        
+        headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        
+        data = {
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": f"{request.host_url}auth/callback",
+            "code_verifier": code_verifier
+        }
+        
+        response = httpx.post(token_url, headers=headers, data=data, timeout=30.0)
+        
+        if response.status_code == 200:
+            token_data = response.json()
+            access_token = token_data.get("access_token")
+            refresh_token = token_data.get("refresh_token")
+            user_data = token_data.get("user")
+            
+            if access_token and user_data:
+                user_id = user_data.get("id")
+                email = user_data.get("email")
+                
+                print(f"✅ USUÁRIO OBTIDO: {email}")
+                
+                # Garantir perfil na tabela users (sem dependência do auth.users)
+                name = user_data.get("user_metadata", {}).get("name") or email.split("@")[0].title()
+                
+                # Criar/atualizar perfil diretamente
+                try:
+                    # Verificar se usuário já existe
+                    existing = supabase_base_client.table('users').select('id').eq('id', user_id).execute()
+                    
+                    if not existing.data:
+                        # Criar novo perfil
+                        profile_data = {
+                            'id': user_id,
+                            'email': email,
+                            'name': name,
+                            'organization': 'Google',
+                            'created_at': datetime.now(timezone.utc).isoformat(),
+                            'is_active': True
+                        }
+                        supabase_base_client.table('users').insert(profile_data).execute()
+                        print(f"✅ Perfil criado para: {email}")
+                    else:
+                        print(f"✅ Perfil já existe para: {email}")
+                except Exception as profile_error:
+                    print(f"⚠️ Erro no perfil: {profile_error}")
+                
+                # Criar objeto User para Flask-Login
+                user_obj = User({
+                    'id': user_id,
+                    'email': email,
+                    'name': name,
+                    'organization': 'Google'
+                })
+                
+                # Fazer login
+                login_user(user_obj, remember=True)
+                
+                # Salvar tokens na sessão
+                session['access_token'] = access_token
+                session['refresh_token'] = refresh_token
+                session['user_id'] = user_id
+                session.permanent = True
+                
+                print(f"🎉 LOGIN BEM-SUCEDIDO: {name}")
+                flash(f'Bem-vindo, {name}!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Dados do usuário não recebidos.', 'danger')
+                return redirect(url_for('login'))
+        else:
+            print(f"❌ Erro ao trocar código: {response.text}")
+            flash('Erro na autenticação com Google.', 'danger')
+            return redirect(url_for('login'))
+        
+    except Exception as e:
+        print(f"❌ Erro no callback: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Erro na autenticação com Google. Use login com email.', 'danger')
+        return redirect(url_for('login'))          
+        
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
@@ -424,147 +557,7 @@ def register():
                 else:
                     flash(f'Erro ao criar conta: {error_msg[:100]}', 'danger')
     
-    return render_template("register.html")
-
-@app.route("/auth/google")
-def auth_google():
-    """Login com Google - CORREÇÃO SIMPLIFICADA QUE FUNCIONA"""
-    try:
-        print("🔗 Iniciando autenticação Google...")
-        
-        callback_url = f"{request.host_url}auth/callback"
-        print(f"📌 Callback URL: {callback_url}")
-        
-        supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-        
-        # Método SIMPLES que funciona
-        response = supabase.auth.sign_in_with_oauth({
-            "provider": "google",
-            "options": {
-                "redirect_to": callback_url,
-                "query_params": {
-                    "access_type": "offline",
-                    "prompt": "select_account"
-                }
-            }
-        })
-        
-        if hasattr(response, 'url'):
-            print(f"🔗 Redirecionando para: {response.url[:100]}...")
-            return redirect(response.url)
-        else:
-            flash('Erro ao iniciar autenticação.', 'danger')
-            return redirect(url_for('login'))
-            
-    except Exception as e:
-        print(f"❌ Erro no Google OAuth: {e}")
-        flash('Erro ao conectar com Google. Use login com email.', 'danger')
-        return redirect(url_for('login'))
-
-@app.route("/auth/callback")
-def auth_callback():
-    """Callback para Google OAuth - VERSÃO FUNCIONAL"""
-    print("=" * 60)
-    print("🔄 CALLBACK GOOGLE")
-    print(f"📦 Code: {request.args.get('code')}")
-    print(f"📦 Error: {request.args.get('error')}")
-    print("=" * 60)
-    
-    code = request.args.get('code')
-    error = request.args.get('error')
-    
-    if error:
-        flash(f'Erro do Google: {error}', 'danger')
-        return redirect(url_for('login'))
-    
-    if not code:
-        flash('Código não recebido.', 'danger')
-        return redirect(url_for('login'))
-    
-    try:
-        # Método DIRETO: obter usuário da sessão atual
-        supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-        
-        # Tentar obter o usuário atual (o Supabase deve ter configurado a sessão)
-        user_response = supabase.auth.get_user()
-        
-        if not user_response or not user_response.user:
-            # Se não conseguir, tentar com o código recebido
-            print("⚠️ Nenhum usuário na sessão, tentando método alternativo...")
-            
-            # Método alternativo: trocar código por token
-            token_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=pkce"
-            
-            headers = {
-                "apikey": SUPABASE_ANON_KEY,
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
-            
-            data = {
-                "code": code,
-                "grant_type": "authorization_code",
-                "redirect_uri": f"{request.host_url}auth/callback"
-            }
-            
-            response = httpx.post(token_url, headers=headers, data=data, timeout=30.0)
-            
-            if response.status_code == 200:
-                token_data = response.json()
-                access_token = token_data.get("access_token")
-                
-                if access_token:
-                    # Configurar sessão com o token
-                    supabase.auth.set_session(access_token, token_data.get("refresh_token"))
-                    user_response = supabase.auth.get_user()
-                else:
-                    flash('Token não recebido.', 'danger')
-                    return redirect(url_for('login'))
-            else:
-                print(f"❌ Erro ao trocar código: {response.text}")
-                flash('Erro na autenticação. Use login com email.', 'danger')
-                return redirect(url_for('login'))
-        
-        if user_response and user_response.user:
-            user = user_response.user
-            email = user.email
-            
-            print(f"✅ USUÁRIO OBTIDO: {email}")
-            
-            # Garantir perfil
-            name = (user.user_metadata.get("name") or 
-                   user.user_metadata.get("full_name") or 
-                   email.split("@")[0].title())
-            
-            ensure_user_profile(user.id, email, name, "Google")
-            
-            # Login no Flask-Login
-            user_obj = User.get(user.id)
-            if not user_obj:
-                user_obj = User({
-                    "id": user.id,
-                    "email": email,
-                    "name": name,
-                    "organization": "Google"
-                })
-            
-            login_user(user_obj, remember=True)
-            
-            # Salvar tokens na sessão
-            session['access_token'] = supabase.auth.session.access_token if hasattr(supabase.auth, 'session') else None
-            session['refresh_token'] = supabase.auth.session.refresh_token if hasattr(supabase.auth, 'session') else None
-            session.permanent = True
-            
-            print(f"🎉 LOGIN BEM-SUCEDIDO: {name}")
-            flash(f'Bem-vindo, {name}!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Não foi possível obter informações do usuário.', 'danger')
-            return redirect(url_for('login'))
-        
-    except Exception as e:
-        print(f"❌ Erro no callback: {e}")
-        import traceback
-        traceback.print_exc()
+    return render_template("register.html")        traceback.print_exc()
         
         # Fallback para login manual
         flash('Erro na autenticação com Google. Por favor, use login com email.', 'warning')
