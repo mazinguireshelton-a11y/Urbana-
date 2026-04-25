@@ -42,7 +42,9 @@ def generate_pkce_pair():
 # ========== CARREGAR VARIÁVEIS DE AMBIENTE ==========
 load_dotenv()
 
-
+# ========== URL BASE DO APP ==========
+BASE_URL = os.getenv('BASE_URL', 'https://urbana-uyj0.onrender.com')
+print(f"🌐 BASE_URL configurada: {BASE_URL}")
 # ========== CONFIGURAÇÃO FLASK ==========
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'urbana-secure-key-2026')
@@ -390,7 +392,7 @@ def auth_google():
         code_verifier, code_challenge = generate_pkce_pair()
         session['code_verifier'] = code_verifier
         
-        callback_url = f"{request.host_url}auth/callback"
+        callback_url = f"{BASE_URL}/auth/callback"
         print(f"📌 Callback URL: {callback_url}")
         
         auth_url = (
@@ -408,7 +410,6 @@ def auth_google():
         print(f"❌ Erro no Google OAuth: {e}")
         flash('Erro ao conectar com Google. Use login com email.', 'danger')
         return redirect(url_for('login'))
-
 
 @app.route("/auth/callback")
 def auth_callback():
@@ -445,12 +446,11 @@ def auth_callback():
         }
         
         data = {
-            "code": code,
-            "grant_type": "authorization_code",
-            "redirect_uri": f"{request.host_url}auth/callback",
-            "code_verifier": code_verifier
+             "code": code,
+             "grant_type": "authorization_code",
+             "redirect_uri": f"{BASE_URL}/auth/callback",
+             "code_verifier": code_verifier
         }
-        
         response = httpx.post(token_url, headers=headers, data=data, timeout=30.0)
         
         if response.status_code == 200:
