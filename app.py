@@ -385,23 +385,14 @@ def login():
 
 @app.route("/auth/google")
 def auth_google():
-    """Login com Google - Versão Corrigida"""
+    """Login com Google - Versão CORRETA"""
     try:
         print("🔗 Iniciando autenticação Google...")
         
-        code_verifier, code_challenge = generate_pkce_pair()
-        session['code_verifier'] = code_verifier
+        callback_url = f"{request.host_url}auth/callback"
         
-        callback_url = f"{BASE_URL}/auth/callback"
-        print(f"📌 Callback URL: {callback_url}")
-        
-        auth_url = (
-            f"{SUPABASE_URL}/auth/v1/authorize?"
-            f"provider=google&"
-            f"redirect_to={callback_url}&"
-            f"code_challenge={code_challenge}&"
-            f"code_challenge_method=S256"
-        )
+        # Método SIMPLES e que funciona em TODAS versões do Supabase
+        auth_url = f"{SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to={callback_url}"
         
         print(f"🔗 Redirect para: {auth_url[:100]}...")
         return redirect(auth_url)
@@ -411,14 +402,12 @@ def auth_google():
         flash('Erro ao conectar com Google. Use login com email.', 'danger')
         return redirect(url_for('login'))
 
+
 @app.route("/auth/callback")
 def auth_callback():
-    """Callback para Google OAuth - Versão Corrigida COM API CORRETA"""
+    """Callback para Google OAuth - Versão que FUNCIONA"""
     print("=" * 60)
     print("🔄 CALLBACK GOOGLE")
-    print(f"📦 Code: {request.args.get('code')}")
-    print(f"📦 Error: {request.args.get('error')}")
-    print("=" * 60)
     
     code = request.args.get('code')
     error = request.args.get('error')
@@ -432,35 +421,25 @@ def auth_callback():
         return redirect(url_for('login'))
     
     try:
-        code_verifier = session.get('code_verifier')
+        # Usa o cliente Supabase com o método CORRETO
+        supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
         
-        if not code_verifier:
-            flash('Erro de autenticação. Tente novamente.', 'danger')
-            return redirect(url_for('login'))
-        
-        # 🔧 CORREÇÃO AQUI - URL CORRETA DO TOKEN
-        token_url = f"{SUPABASE_URL}/auth/v1/token"
+        # 🔧 MÉTODO CORRETO - set_session com o código recebido
+        # Primeiro, troca o código por tokens usando a API REST diretamente
+        token_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=authorization_code"
         
         headers = {
             "apikey": SUPABASE_ANON_KEY,
             "Content-Type": "application/json"
         }
         
-        # 🔧 CORREÇÃO AQUI - BODY CORRETO (JSON, não form-data)
         data = {
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": f"{request.host_url}auth/callback",
-            "code_verifier": code_verifier
+            "redirect_to": f"{request.host_url}auth/callback"
         }
         
-        print(f"📡 Enviando requisição para: {token_url}")
-        print(f"📦 Dados: grant_type=authorization_code, code_verifier={code_verifier[:20]}...")
-        
         response = httpx.post(token_url, headers=headers, json=data, timeout=30.0)
-        
-        print(f"📡 Status code: {response.status_code}")
-        print(f"📡 Resposta: {response.text[:200]}")
         
         if response.status_code == 200:
             token_data = response.json()
@@ -476,6 +455,14 @@ def auth_callback():
                 
                 name = user_data.get("user_metadata", {}).get("name") or email.split("@")[0].title()
                 
+                # Salvar tokens na sessão
+                session['access_token'] = access_token
+                session['refresh_token'] = refresh_token
+                
+                # Configurar cliente com os tokens
+                supabase.auth.set_session(access_token, refresh_token)
+                
+                # Garantir perfil na tabela users
                 try:
                     existing = supabase_base_client.table('users').select('id').eq('id', user_id).execute()
                     
@@ -490,8 +477,6 @@ def auth_callback():
                         }
                         supabase_base_client.table('users').insert(profile_data).execute()
                         print(f"✅ Perfil criado para: {email}")
-                    else:
-                        print(f"✅ Perfil já existe para: {email}")
                 except Exception as profile_error:
                     print(f"⚠️ Erro no perfil: {profile_error}")
                 
@@ -503,9 +488,6 @@ def auth_callback():
                 })
                 
                 login_user(user_obj, remember=True)
-                
-                session['access_token'] = access_token
-                session['refresh_token'] = refresh_token
                 session['user_id'] = user_id
                 session.permanent = True
                 
@@ -526,7 +508,6 @@ def auth_callback():
         traceback.print_exc()
         flash('Erro na autenticação com Google. Use login com email.', 'danger')
         return redirect(url_for('login'))
-        
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
