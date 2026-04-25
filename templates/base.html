@@ -28,40 +28,80 @@
             <ul class="nav-links">
                 <li><a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">🏠 Início</a></li>
                 <li><a href="/dashboard" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">📊 Dashboard</a></li>
+                {% if current_user.is_authenticated %}
                 <li><a href="/simulate" class="nav-link">➕ Nova Simulação</a></li>
                 <li><a href="/my-simulations" class="nav-link {% if request.endpoint == 'my_simulations' %}active{% endif %}">📋 Simulações</a></li>
                 <li><a href="/profile" class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}">👤 Perfil</a></li>
+                {% endif %}
             </ul>
             
             <div class="nav-user">
-                <!-- MODO DEMO - Sempre mostra o usuário demo -->
-                <div class="user-info">
-                    <!-- Seletor de Idioma -->
-                    <div class="language-toggle">
-                        <button onclick="changeLanguage('pt')" class="lang-btn" title="Português">
-                            🇧🇷 PT
-                        </button>
-                        <button onclick="changeLanguage('en')" class="lang-btn" title="English">
-                            🇺🇸 EN
-                        </button>
+                {% if current_user.is_authenticated %}
+                    <!-- Usuário logado -->
+                    <div class="user-info">
+                        <!-- Seletor de Idioma -->
+                        <div class="language-toggle">
+                            <button onclick="changeLanguage('pt')" class="lang-btn" title="Português">
+                                🇧🇷 PT
+                            </button>
+                            <button onclick="changeLanguage('en')" class="lang-btn" title="English">
+                                🇺🇸 EN
+                            </button>
+                        </div>
+                        
+                        <!-- Seletor de Tema -->
+                        <div class="theme-toggle">
+                            <button class="theme-btn light-btn" onclick="setTheme('light')" title="Tema Claro">
+                                ☀️
+                            </button>
+                            <button class="theme-btn dark-btn" onclick="setTheme('dark')" title="Tema Escuro">
+                                🌙
+                            </button>
+                            <button class="theme-btn auto-btn" onclick="setTheme('auto')" title="Auto (Sistema)">
+                                🔄
+                            </button>
+                        </div>
+                        
+                        <!-- CORRIGIDO: Verifica se current_user existe e tem name -->
+                        <span class="user-name">
+                            {% if current_user.is_authenticated and current_user.name %}
+                                {{ current_user.name.split()[0] }}
+                            {% else %}
+                                Usuário
+                            {% endif %}
+                        </span>
+                        <a href="/logout" class="btn btn-sm btn-outline">Sair</a>
                     </div>
-                    
-                    <!-- Seletor de Tema -->
-                    <div class="theme-toggle">
-                        <button class="theme-btn light-btn" onclick="setTheme('light')" title="Tema Claro">
-                            ☀️
-                        </button>
-                        <button class="theme-btn dark-btn" onclick="setTheme('dark')" title="Tema Escuro">
-                            🌙
-                        </button>
-                        <button class="theme-btn auto-btn" onclick="setTheme('auto')" title="Auto (Sistema)">
-                            🔄
-                        </button>
+                {% else %}
+                    <!-- Usuário não logado -->
+                    <div class="auth-links">
+                        <!-- Seletor de Idioma -->
+                        <div class="language-toggle">
+                            <button onclick="changeLanguage('pt')" class="lang-btn" title="Português">
+                                🇧🇷 PT
+                            </button>
+                            <button onclick="changeLanguage('en')" class="lang-btn" title="English">
+                                🇺🇸 EN
+                            </button>
+                        </div>
+                        
+                        <!-- Seletor de Tema -->
+                        <div class="theme-toggle">
+                            <button class="theme-btn light-btn" onclick="setTheme('light')" title="Tema Claro">
+                                ☀️
+                            </button>
+                            <button class="theme-btn dark-btn" onclick="setTheme('dark')" title="Tema Escuro">
+                                🌙
+                            </button>
+                            <button class="theme-btn auto-btn" onclick="setTheme('auto')" title="Auto (Sistema)">
+                                🔄
+                            </button>
+                        </div>
+                        
+                        <a href="/login" class="btn btn-sm btn-outline">Entrar</a>
+                        <a href="/register" class="btn btn-sm btn-primary">Cadastrar</a>
                     </div>
-                    
-                    <span class="user-name">{{ current_user.name.split()[0] if current_user else 'Demo' }}</span>
-                    <span class="badge bg-info">Modo Demo</span>
-                </div>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -97,4 +137,4 @@
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='js/translator.js') }}"></script>
 </body>
-</html>
+    </html>
