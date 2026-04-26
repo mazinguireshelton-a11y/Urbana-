@@ -381,29 +381,18 @@ def login():
                 flash('Erro no login. Tente novamente.', 'danger')
     
     return render_template("login.html")
-                
+
+
 @app.route("/auth/google")
 def auth_google():
-    """Login com Google - Versão com STATE parameter"""
+    """Login com Google - Versão Supabase Native"""
     try:
         print("🔗 Iniciando autenticação Google...")
         
-        # Gerar state parameter para segurança
-        import secrets
-        state = secrets.token_urlsafe(32)
-        session['oauth_state'] = state
+        # URL SIMPLES - Deixa o Supabase gerenciar tudo
+        auth_url = f"{SUPABASE_URL}/auth/v1/authorize?provider=google"
         
-        callback_url = "https://urbana-uyj0.onrender.com/auth/callback"
-        
-        # Construir URL com state
-        auth_url = (
-            f"{SUPABASE_URL}/auth/v1/authorize?"
-            f"provider=google&"
-            f"redirect_to={callback_url}&"
-            f"state={state}"
-        )
-        
-        print(f"🔗 Redirect para: {auth_url[:150]}...")
+        print(f"🔗 Redirect para: {auth_url}")
         return redirect(auth_url)
             
     except Exception as e:
@@ -411,28 +400,19 @@ def auth_google():
         flash('Erro ao conectar com Google.', 'danger')
         return redirect(url_for('login'))
 
+
 @app.route("/auth/callback")
 def auth_callback():
-    """Callback com verificação de state"""
+    """Callback - Versão Supabase Native"""
     print("=" * 60)
     print("🔄 CALLBACK GOOGLE")
     
     # Pegar parâmetros da URL
     code = request.args.get('code')
     error = request.args.get('error')
-    state = request.args.get('state')
     
     print(f"📦 Code: {code}")
     print(f"📦 Error: {error}")
-    print(f"📦 State recebido: {state}")
-    print(f"📦 State na sessão: {session.get('oauth_state')}")
-    
-    # Verificar state (segurança)
-    expected_state = session.pop('oauth_state', None)
-    if state != expected_state:
-        print(f"❌ State mismatch! State recebido: {state}, esperado: {expected_state}")
-        flash('Erro de segurança na autenticação. Tente novamente.', 'danger')
-        return redirect(url_for('login'))
     
     if error:
         flash(f'Erro do Google: {error}', 'danger')
@@ -445,60 +425,58 @@ def auth_callback():
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
         
-        token_url = f"{SUPABASE_URL}/auth/v1/token"
+        # Usar o método correto do Supabase
+        session_data = supabase.auth.exchange_code({
+            "auth_code": code
+        })
         
-        headers = {
-            "apikey": SUPABASE_ANON_KEY,
-            "Content-Type": "application/json"
-        }
-        
-        data = {
-            "grant_type": "authorization_code",
-            "code": code
-        }
-        
-        print(f"📡 Enviando código para: {token_url}")
-        
-        response = httpx.post(token_url, headers=headers, json=data, timeout=30.0)
-        
-        print(f"📡 Status: {response.status_code}")
-        
-        if response.status_code == 200:
-            token_data = response.json()
-            user_data = token_data.get("user")
+        if session_data and session_data.user:
+            user = session_data.user
+            email = user.email
             
-            if user_data:
-                user_id = user_data.get("id")
-                email = user_data.get("email")
-                name = user_data.get("user_metadata", {}).get("name", email.split("@")[0].title())
-                
-                # Salvar perfil
-                try:
-                    existing = supabase_base_client.table('users').select('id').eq('id', user_id).execute()
-                    if not existing.data:
-                        supabase_base_client.table('users').insert({
-                            'id': user_id,
-                            'email': email,
-                            'name': name,
-                            'organization': 'Google',
-                            'created_at': datetime.now(timezone.utc).isoformat(),
-                            'is_active': True
-                        }).execute()
-                except Exception as e:
-                    print(f"⚠️ Erro perfil: {e}")
-                
-                user_obj = User({'id': user_id, 'email': email, 'name': name, 'organization': 'Google'})
-                login_user(user_obj, remember=True)
-                
-                flash(f'Bem-vindo, {name}!', 'success')
-                return redirect(url_for('dashboard'))
-        
-        flash('Erro na autenticação.', 'danger')
-        return redirect(url_for('login'))
-        
+            # Pega nome
+            name = email.split('@')[0].title()
+            if user.user_metadata and user.user_metadata.get('name'):
+                name = user.user_metadata.get('name')
+            
+            # Salvar tokens
+            if session_data.access_token:
+                session['access_token'] = session_data.access_token
+            if session_data.refresh_token:
+                session['refresh_token'] = session_data.refresh_token
+            
+            # Garantir perfil
+            try:
+                existing = supabase_base_client.table('users').select('id').eq('id', user.id).execute()
+                if not existing.data:
+                    supabase_base_client.table('users').insert({
+                        'id': user.id,
+                        'email': email,
+                        'name': name,
+                        'organization': 'Google',
+                        'created_at': datetime.now(timezone.utc).isoformat(),
+                        'is_active': True
+                    }).execute()
+                    print(f"✅ Perfil criado para: {email}")
+            except Exception as e:
+                print(f"⚠️ Erro perfil: {e}")
+            
+            user_obj = User({'id': user.id, 'email': email, 'name': name, 'organization': 'Google'})
+            login_user(user_obj, remember=True)
+            session['user_id'] = user.id
+            
+            print(f"🎉 Login bem sucedido: {name}")
+            flash(f'Bem-vindo, {name}!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Erro na autenticação com Google.', 'danger')
+            return redirect(url_for('login'))
+            
     except Exception as e:
-        print(f"❌ Erro: {e}")
-        flash('Erro na autenticação.', 'danger')
+        print(f"❌ Erro no callback: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Erro na autenticação com Google.', 'danger')
         return redirect(url_for('login'))
         
 
