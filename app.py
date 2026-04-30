@@ -390,7 +390,7 @@ def auth_google():
         print("🔗 Iniciando autenticação Google...")
         
         # URL SIMPLES - Deixa o Supabase gerenciar tudo
-        auth_url = f"{SUPABASE_URL}/auth/v1/authorize?provider=google"
+        auth_url = f"{SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to={BASE_URL}/auth/callback"
         
         print(f"🔗 Redirect para: {auth_url}")
         return redirect(auth_url)
